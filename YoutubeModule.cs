@@ -17,7 +17,7 @@ namespace WikiaBot {
 
 		private static string getJsonTitle(string s){
 			var o = JObject.Parse(s);
-			string title = (string)o["items"]["snippet"]["title"];
+			string title = (string)o["items"][0]["snippet"]["title"];
 			Console.WriteLine ("Youtube Video Title: " + title);
 			return title;
 		}

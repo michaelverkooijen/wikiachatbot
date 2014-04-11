@@ -11,12 +11,13 @@ using System.Numerics;
 
 namespace WikiaBot {
     public class ChatModule {
-        private string wiki, user, pass;
+		private string wiki, user, pass, youtubeCredentials, wgChatKey, xhrKey;
         ConnectionManager cm;
-        public ChatModule(string wiki, string user, string pass) {
+		public ChatModule(string wiki, string user, string pass, string youtubeCredentials) {
             this.wiki = wiki;
             this.user = user;
             this.pass = pass;
+			this.youtubeCredentials = youtubeCredentials;
             cm = new ConnectionManager();
         }
 
@@ -36,14 +37,14 @@ namespace WikiaBot {
             //Console.WriteLine(response);
             int x = response.IndexOf("wgChatKey");
             //int y = response.IndexOf("roomId");
-            string wgChatKey = response.Substring(x + 12, 32);
+            wgChatKey = response.Substring(x + 12, 32);
             Console.WriteLine("wgChatKey: " + wgChatKey);
 			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime() - new DateTime (1970, 1, 1)).TotalSeconds.ToString());
             //http://chat-1-3.wikia.com/socket.io/1/xhr-polling/?name=KINMUNE&roomId=202958&key=70cc032fb13d88d1065ec496655a9111
             //TODO: unsafe room! This is hardcoded to elderscrolls. Search for roomId first.
             //"roomId":132,"wgChatMod":0,"WIKIA_NODE_HOST":"chat-1-3.wikia.com","WIKIA_NODE_PORT":"80"
             int failCount = 0;
-            string xhrKey = null;
+            xhrKey = null;
             string lastResponse = "";
             //enter poll loop:
             //make fallback escape from loop
@@ -116,10 +117,35 @@ namespace WikiaBot {
                     } catch (Exception e) {
                         Console.WriteLine(e.ToString());
                     }
+					if (text.Contains ("youtube")) {
+						string[] words = text.Split(' ');
+						foreach (string word in words){
+							string[] args = word.Split ('?');
+							foreach (string argument in args) {
+								string[] subargs = argument.Split ('&');
+								foreach (string subarg in subargs) {
+									if (subarg.Contains("v=")) {
+										string videoId = subarg.Replace ("v=", "");
+										Console.WriteLine ("Found Video ID: " + videoId);
+										string videoTitle = YoutubeModule.GetVideoTitle (videoId, youtubeCredentials);
+										Console.WriteLine ("Video Title: " + videoTitle);
+										if (!videoTitle.Equals("")) {
+											speak (videoTitle);
+										}
+									}
+								}
+							}
+						}
+					}
                 }
             }
             return true;
         }
+
+		private void speak(string s){
+			string body = "5:::{\"name\":\"message\",\"args\":[\"{\\\"id\\\":null,\\\"cid\\\":\\\"c31\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"chat\\\",\\\"roomId\\\":244,\\\"name\\\":\\\"KINMUNE\\\",\\\"text\\\":\\\"" + s + "\\\",\\\"avatarSrc\\\":\\\"\\\",\\\"timeStamp\\\":\\\"\\\",\\\"continued\\\":false,\\\"temp\\\":false}}\"]}";
+			cm.PostRequest("http://chat-3-3.wikia.com/socket.io/1/xhr-polling/" + xhrKey, new string[]{"name=" + user, "roomID=244", "key=" + wgChatKey, "t=" + (DateTime.Now.ToUniversalTime() - new DateTime (1970, 1, 1)).TotalSeconds}, body);
+		}
     }
 }
 
