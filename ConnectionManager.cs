@@ -11,14 +11,14 @@ namespace WikiaBot {
     public class ConnectionManager {
         CookieContainer cookieJar;
         CookieClient client;
-        public ConnectionManager() {
+		public ConnectionManager(string cookieDomain, string cookieName) {
             client = new CookieClient();
             cookieJar = new CookieContainer();
-            String domain = CookieClient.GetCookieDomain("http://elderscrolls.wikia.com");
+			String domain = CookieClient.GetCookieDomain(cookieDomain);
             Console.WriteLine(domain);
             Cookie c = new Cookie();
             c.Domain = domain;
-            c.Name = "wikicities";
+			c.Name = cookieName;
             //cookieJar.Add(new Cookie("wikicities", "cookie_value", "/", ".wikia.com"));
             cookieJar.Add(c);
         }

@@ -11,7 +11,7 @@ namespace WikiaBot {
 		public static string GetVideoTitle(string videoId, string credentials){
 			string url = "https://www.googleapis.com/youtube/v3/videos";
 			string[] args = { "id=" + videoId, "key=" + credentials, "part=snippet" };
-			string result = new ConnectionManager().GetRequest(url, args);
+			string result = new ConnectionManager("http://youtube.com", "youtube").GetRequest(url, args);
 			return getJsonTitle(result);
 		}
 

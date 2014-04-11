@@ -18,7 +18,7 @@ namespace WikiaBot {
             this.user = user;
             this.pass = pass;
 			this.youtubeCredentials = youtubeCredentials;
-            cm = new ConnectionManager();
+			cm = new ConnectionManager("http://elderscrolls.wikia.com", "wikicities");
         }
 
         //TODO: mid-session logins
