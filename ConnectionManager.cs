@@ -44,7 +44,14 @@ namespace WikiaBot {
             //return null; //can WebClient.DownloadString() fail?
         }
 
-        public string PostRequest( string url, string[] args) {
+		/// <summary>
+		/// Posts the request.
+		/// </summary>
+		/// <returns>The request.</returns>
+		/// <param name="url">URL.</param>
+		/// <param name="args">Arguments.</param>
+		/// <param name="body">Body.</param>
+		public string PostRequest( string url, string[] args, string body) {
             StringBuilder post = new StringBuilder();
             post.Append(url);
             if (args.Length > 0) {
@@ -54,7 +61,7 @@ namespace WikiaBot {
                 post.AppendFormat("{0}{1}","&",s);
             }
             using (client) {
-                return client.DownloadString(post.ToString());
+				return client.UploadString(post.ToString(), body);
             }
             //return null; //can WebClient.DownloadString() fail?
         }
