@@ -121,7 +121,7 @@ namespace WikiaBot {
                     } catch (Exception e) {
                         Console.WriteLine(e.ToString());
                     }
-					if (text.Contains ("youtube")) {
+					/*if (text.Contains ("youtube")) {
 						string[] words = text.Split(' ');
 						foreach (string word in words){
 							string[] args = word.Split ('?');
@@ -140,7 +140,7 @@ namespace WikiaBot {
 								}
 							}
 						}
-					}
+					}*/
                 }
             }
             return true;
