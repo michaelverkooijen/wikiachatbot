@@ -11,7 +11,8 @@ using System.Numerics;
 
 namespace WikiaBot {
     public class ChatModule {
-		private string wiki, user, pass, youtubeCredentials, wgChatKey, xhrKey;
+		private string wiki, user, pass, youtubeCredentials, chatKey, xhrKey, nodeHost;
+		private int roomId;
         ConnectionManager cm;
 		public ChatModule(string wiki, string user, string pass, string youtubeCredentials) {
             this.wiki = wiki;
@@ -33,12 +34,15 @@ namespace WikiaBot {
                 return false;
             }
             //get wgchatkey
-            string response = cm.GetRequest("http://" + wiki + ".wikia.com/wiki/Special:Chat", new string[]{});
+			string response = cm.GetRequest("http://" + wiki + ".wikia.com/wikia.php", new string[]{"controller=Chat", "format=json"});
             //Console.WriteLine(response);
-            int x = response.IndexOf("wgChatKey");
+			//int x = response.IndexOf("wgChatKey");
             //int y = response.IndexOf("roomId");
-            wgChatKey = response.Substring(x + 12, 32);
-            Console.WriteLine("wgChatKey: " + wgChatKey);
+			var o = JObject.Parse(response);
+			chatKey = (string)o["chatkey"];
+			roomId = (int)o ["roomId"];
+			nodeHost = (string)o ["nodeHostname"];
+			Console.WriteLine("chatKey: " + chatKey + " room: " + nodeHost);
 			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime() - new DateTime (1970, 1, 1)).TotalSeconds.ToString());
             //http://chat-1-3.wikia.com/socket.io/1/xhr-polling/?name=KINMUNE&roomId=202958&key=70cc032fb13d88d1065ec496655a9111
             //TODO: unsafe room! This is hardcoded to elderscrolls. Search for roomId first.
@@ -52,7 +56,7 @@ namespace WikiaBot {
                 if(xhrKey != null && !lastResponse.Equals("")){
                     Console.WriteLine("Reading chat...");
                     try {
-						lastResponse = cm.GetRequest("http://chat-3-3.wikia.com/socket.io/1/xhr-polling/" + xhrKey, new string[]{"name=" + user, "roomID=244", "key=" + wgChatKey, "t=" + (DateTime.Now.ToUniversalTime() - new DateTime (1970, 1, 1)).TotalSeconds}); //read chat
+						lastResponse = cm.GetRequest("http://" + nodeHost + "/socket.io/1/xhr-polling/" + xhrKey, new string[]{"name=" + user, "roomID=" + roomId.ToString(), "key=" + chatKey, "t=" + (DateTime.Now.ToUniversalTime() - new DateTime (1970, 1, 1)).TotalSeconds}); //read chat
                         Console.WriteLine (lastResponse);
 						//�433�
 						string[] lines = lastResponse.Split('\ufffd');
@@ -69,13 +73,13 @@ namespace WikiaBot {
                     Console.WriteLine("Requesting xhr key...");
                     //lastResponse = cm.PostQuery("http://chat-1-3.wikia.com/socket.io/1/xhr-polling/", new string[]{"name=" + user, "roomID=132", "key=" + wgChatKey}); //get key
                     try { 
-						lastResponse = cm.GetRequest("http://chat-3-3.wikia.com/socket.io/1/xhr-polling/?name=KINMUNE&roomId=244&key=" + wgChatKey + "&t=" + (DateTime.Now.ToUniversalTime() - new DateTime (1970, 1, 1)).TotalSeconds, new string[] { });
+						lastResponse = cm.GetRequest("http://" + nodeHost + "/socket.io/1/xhr-polling/", new string[]{"name=" + user, "roomID=" + roomId.ToString(), "key=" + chatKey, "t=" + (DateTime.Now.ToUniversalTime() - new DateTime (1970, 1, 1)).TotalSeconds});
                     } catch (Exception e) {
                         lastResponse = "";
                         failCount++;
                         Console.WriteLine ("FAILED requesting key: " + e.ToString());
                     }
-                    x = lastResponse.IndexOf(":");
+					int x = lastResponse.IndexOf(":");
                     if (x > 0) {
                         xhrKey = lastResponse.Substring(0, x);
                     }
@@ -143,8 +147,8 @@ namespace WikiaBot {
         }
 
 		private void speak(string s){
-			string body = "5:::{\"name\":\"message\",\"args\":[\"{\\\"id\\\":null,\\\"cid\\\":\\\"c31\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"chat\\\",\\\"roomId\\\":244,\\\"name\\\":\\\"KINMUNE\\\",\\\"text\\\":\\\"" + s + "\\\",\\\"avatarSrc\\\":\\\"\\\",\\\"timeStamp\\\":\\\"\\\",\\\"continued\\\":false,\\\"temp\\\":false}}\"]}";
-			cm.PostRequest("http://chat-3-3.wikia.com/socket.io/1/xhr-polling/" + xhrKey, new string[]{"name=" + user, "roomID=244", "key=" + wgChatKey, "t=" + (DateTime.Now.ToUniversalTime() - new DateTime (1970, 1, 1)).TotalSeconds}, body);
+			string body = "5:::{\"name\":\"message\",\"args\":[\"{\\\"id\\\":null,\\\"cid\\\":\\\"c31\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"chat\\\",\\\"roomId\\\":" + roomId.ToString() + ",\\\"name\\\":\\\"" + user + "\\\",\\\"text\\\":\\\"" + s + "\\\",\\\"avatarSrc\\\":\\\"\\\",\\\"timeStamp\\\":\\\"\\\",\\\"continued\\\":false,\\\"temp\\\":false}}\"]}";
+			cm.PostRequest("http://" + nodeHost + "/socket.io/1/xhr-polling/" + xhrKey, new string[]{"name=" + user, "roomID=" + roomId.ToString(), "key=" + chatKey, "t=" + (DateTime.Now.ToUniversalTime() - new DateTime (1970, 1, 1)).TotalSeconds}, body);
 		}
     }
 }
