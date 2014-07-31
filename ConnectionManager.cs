@@ -22,6 +22,7 @@ namespace WikiaBot {
 			c.Name = cookieName;
 			//cookieJar.Add(new Cookie("wikicities", "cookie_value", "/", ".wikia.com"));
 			cookieJar.Add (c);
+			client.Headers.Add ("user-agent", "Flightmare/chatbot");
 		}
 
 		/// <summary>

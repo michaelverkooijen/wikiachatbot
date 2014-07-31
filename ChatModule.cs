@@ -42,7 +42,7 @@ namespace WikiaBot {
 			chatKey = (string)o ["chatkey"];
 			roomId = (int)o ["roomId"];
 			nodeHost = (string)o ["nodeHostname"];
-			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost);
+			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString());
 			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
 			int failCount = 0;
 			xhrKey = null;
@@ -55,9 +55,9 @@ namespace WikiaBot {
 					try {
 						lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/1/xhr-polling/" + xhrKey, new string[] {
 							"name=" + user,
-							"roomID=" + roomId.ToString (),
+							"roomId=" + roomId.ToString (),
 							"key=" + chatKey,
-							"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds
+							//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds
 						}); //read chat
 						Console.WriteLine (lastResponse);
 						//�433�
@@ -75,9 +75,9 @@ namespace WikiaBot {
 					try { 
 						lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/1/xhr-polling/", new string[] {
 							"name=" + user,
-							"roomID=" + roomId.ToString (),
+							"roomId=" + roomId.ToString (),
 							"key=" + chatKey,
-							"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds
+							//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString
 						});
 					} catch (Exception e) {
 						lastResponse = "";
@@ -113,11 +113,11 @@ namespace WikiaBot {
 					//Console.WriteLine("Text: " + text);
 					string timestamp = (string)data ["attrs"] ["timeStamp"];
 					//Console.WriteLine(timestamp);
-					var dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToLocalTime ();
-					string dts = dt.ToString ().Replace ("/", "-");
-					string line = "*" + dts.Split (' ') [1] + ": [[User:" + name + "|]]: <nowiki>" + text + "</nowiki>";
+					//var dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToLocalTime ();
+					var dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd HH:mm:ss");
+					string line = "*" + dt.Split (' ') [1] + ": [[User:" + name + "|]]: <nowiki>" + text + "</nowiki>";
 					Console.WriteLine (line);
-					string filename = dts.Split (' ') [0] + ".log";
+					string filename = dt.Split (' ') [0] + ".log";
 					Console.WriteLine (filename);
 					try {
 						using (StreamWriter file = File.AppendText (@filename)) {
@@ -155,7 +155,7 @@ namespace WikiaBot {
 			string body = "5:::{\"name\":\"message\",\"args\":[\"{\\\"id\\\":null,\\\"cid\\\":\\\"c31\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"chat\\\",\\\"roomId\\\":" + roomId.ToString () + ",\\\"name\\\":\\\"" + user + "\\\",\\\"text\\\":\\\"" + s + "\\\",\\\"avatarSrc\\\":\\\"\\\",\\\"timeStamp\\\":\\\"\\\",\\\"continued\\\":false,\\\"temp\\\":false}}\"]}";
 			cm.PostRequest ("http://" + nodeHost + "/socket.io/1/xhr-polling/" + xhrKey, new string[] {
 				"name=" + user,
-				"roomID=" + roomId.ToString (),
+				"roomId=" + roomId.ToString (),
 				"key=" + chatKey,
 				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds
 			}, body);
