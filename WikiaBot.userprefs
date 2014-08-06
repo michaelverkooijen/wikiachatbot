@@ -4,8 +4,8 @@
     <Files>
       <File FileName="Program.cs" Line="1" Column="1" />
       <File FileName="CookieClient.cs" Line="1" Column="1" />
-      <File FileName="ConnectionManager.cs" Line="42" Column="5" />
-      <File FileName="ChatModule.cs" Line="60" Column="10" />
+      <File FileName="ConnectionManager.cs" Line="39" Column="5" />
+      <File FileName="ChatModule.cs" Line="22" Column="49" />
       <File FileName="YoutubeModule.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>

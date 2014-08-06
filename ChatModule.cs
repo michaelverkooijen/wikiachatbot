@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Numerics;
+using System.Collections;
 
 namespace WikiaBot {
 	public class ChatModule {
@@ -96,6 +97,7 @@ namespace WikiaBot {
 		}
 
 		private bool parseResponse (string s) {
+			ArrayList namesBlacklist = new ArrayList ();
 			int prefix = s.IndexOf ("\"");
 			prefix--;
 			//Console.WriteLine(prefix); //4 etc
@@ -105,6 +107,7 @@ namespace WikiaBot {
 				var o = JObject.Parse (s);
 				string eve = (string)o ["event"];
 				//Console.WriteLine(eve);
+				//TODO: switch
 				if (eve.Equals ("chat:add")) {
 					var data = JObject.Parse ((string)o ["data"]);
 					string name = (string)data ["attrs"] ["name"];
@@ -146,6 +149,15 @@ namespace WikiaBot {
 							}
 						}
 					}*/
+				} else {
+					if (eve.Equals ("join")) {
+						var data = JObject.Parse ((string)o ["data"]);
+						string name = (string)data ["attrs"] ["name"];
+						if(!namesBlacklist.Contains(name)) {
+							speak ("Hello there, " + name + "!");
+							namesBlacklist.Add(name);
+						}
+					}
 				}
 			}
 			return true;
