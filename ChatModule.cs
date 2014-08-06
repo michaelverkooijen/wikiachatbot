@@ -15,6 +15,7 @@ namespace WikiaBot {
 		private string wiki, user, pass, youtubeCredentials, chatKey, xhrKey, nodeHost;
 		private int roomId;
 		ConnectionManager cm;
+		ArrayList namesBlacklist;
 
 		public ChatModule (string wiki, string user, string pass, string youtubeCredentials) {
 			this.wiki = wiki;
@@ -22,6 +23,7 @@ namespace WikiaBot {
 			this.pass = pass;
 			this.youtubeCredentials = youtubeCredentials;
 			cm = new ConnectionManager ("http://" + wiki + ".wikia.com", "wikicities");
+			namesBlacklist = new ArrayList ();
 		}
 		//TODO: mid-session logins
 		public bool start () {
@@ -97,7 +99,6 @@ namespace WikiaBot {
 		}
 
 		private bool parseResponse (string s) {
-			ArrayList namesBlacklist = new ArrayList ();
 			int prefix = s.IndexOf ("\"");
 			prefix--;
 			//Console.WriteLine(prefix); //4 etc
