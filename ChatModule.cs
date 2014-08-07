@@ -24,6 +24,7 @@ namespace WikiaBot {
 			this.youtubeCredentials = youtubeCredentials;
 			cm = new ConnectionManager ("http://" + wiki + ".wikia.com", "wikicities");
 			namesBlacklist = new ArrayList ();
+			namesBlacklist.Add (user); //prevent bot from talking to itself
 		}
 		//TODO: mid-session logins
 		public bool start () {
@@ -45,7 +46,7 @@ namespace WikiaBot {
 			chatKey = (string)o ["chatkey"];
 			roomId = (int)o ["roomId"];
 			nodeHost = (string)o ["nodeHostname"];
-			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString());
+			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
 			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
 			int failCount = 0;
 			xhrKey = null;
@@ -108,29 +109,30 @@ namespace WikiaBot {
 				var o = JObject.Parse (s);
 				string eve = (string)o ["event"];
 				//Console.WriteLine(eve);
-				//TODO: switch
-				if (eve.Equals ("chat:add")) {
-					var data = JObject.Parse ((string)o ["data"]);
-					string name = (string)data ["attrs"] ["name"];
-					//Console.WriteLine("Name: " + name);
-					string text = (string)data ["attrs"] ["text"];
-					//Console.WriteLine("Text: " + text);
-					string timestamp = (string)data ["attrs"] ["timeStamp"];
-					//Console.WriteLine(timestamp);
-					//var dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToLocalTime ();
-					var dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd HH:mm:ss");
-					string line = "*" + dt.Split (' ') [1] + ": [[User:" + name + "|]]: <nowiki>" + text + "</nowiki>";
-					Console.WriteLine (line);
-					string filename = dt.Split (' ') [0] + ".log";
-					Console.WriteLine (filename);
-					try {
-						using (StreamWriter file = File.AppendText (@filename)) {
-							file.WriteLine (line);
+				switch (eve) {
+				case "chat:add":
+					{
+						var data = JObject.Parse ((string)o ["data"]);
+						string name = (string)data ["attrs"] ["name"];
+						//Console.WriteLine("Name: " + name);
+						string text = (string)data ["attrs"] ["text"];
+						//Console.WriteLine("Text: " + text);
+						string timestamp = (string)data ["attrs"] ["timeStamp"];
+						//Console.WriteLine(timestamp);
+						//var dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToLocalTime ();
+						var dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd HH:mm:ss");
+						string line = "*" + dt.Split (' ') [1] + ": [[User:" + name + "|]]: <nowiki>" + text + "</nowiki>";
+						Console.WriteLine (line);
+						string filename = dt.Split (' ') [0] + ".log";
+						Console.WriteLine (filename);
+						try {
+							using (StreamWriter file = File.AppendText (@filename)) {
+								file.WriteLine (line);
+							}
+						} catch (Exception e) {
+							Console.WriteLine (e.ToString ());
 						}
-					} catch (Exception e) {
-						Console.WriteLine (e.ToString ());
-					}
-					/*if (text.Contains ("youtube")) {
+						/*if (text.Contains ("youtube")) {
 						string[] words = text.Split(' ');
 						foreach (string word in words){
 							string[] args = word.Split ('?');
@@ -150,15 +152,61 @@ namespace WikiaBot {
 							}
 						}
 					}*/
-				} else {
-					if (eve.Equals ("join")) {
+					}
+					break;
+				case "join":
+					{
 						var data = JObject.Parse ((string)o ["data"]);
 						string name = (string)data ["attrs"] ["name"];
-						if(!namesBlacklist.Contains(name)) {
+						if (!namesBlacklist.Contains (name)) {
 							speak ("Hello there, " + name + "!");
-							namesBlacklist.Add(name);
+							namesBlacklist.Add (name);
 						}
 					}
+					break;
+				case "kick":
+					{
+						var data = JObject.Parse ((string)o ["data"]);
+						string kickedName = (string)data ["attrs"] ["kickedUserName"];
+						string modName = (string)data ["attrs"] ["moderatorName"];
+						//string reason = (string)data ["attrs"] ["reason"];
+						//TODO: test for correct timezone settings (should be UTC)
+						string filename = DateTime.Now.ToUniversalTime ().ToString ("yyyyMMdd") + ".log";
+						string line = "**[[User:" + modName + "|]] kicked [[User:" + kickedName + "|]]";
+						Console.WriteLine (line);
+						Console.WriteLine (DateTime.Now.ToUniversalTime ().ToString ("HH:mm:ss"));
+						Console.WriteLine ("kick-filename: "+filename);
+						try {
+							using (StreamWriter file = File.AppendText (@filename)) {
+								file.WriteLine (line);
+							}
+						} catch (Exception e) {
+							Console.WriteLine (e.ToString ());
+						}
+					}
+					break;
+				case "ban":
+					{
+						var data = JObject.Parse ((string)o ["data"]);
+						string kickedName = (string)data ["attrs"] ["kickedUserName"];
+						string modName = (string)data ["attrs"] ["moderatorName"];
+						string reason = (string)data ["attrs"] ["reason"];
+						//int time = (int)data ["attrs"] ["time"];
+						//TODO: test for correct timezone settings (should be UTC)
+						string filename = DateTime.Now.ToUniversalTime ().ToString ("yyyyMMdd") + ".log";
+						string line = "**[[User:" + modName + "|]] banned [[User:" + kickedName + "|]] with reason: " + reason;
+						Console.WriteLine (line);
+						Console.WriteLine (DateTime.Now.ToUniversalTime ().ToString ("HH:mm:ss"));
+						Console.WriteLine ("kick-filename: "+filename);
+						try {
+							using (StreamWriter file = File.AppendText (@filename)) {
+								file.WriteLine (line);
+							}
+						} catch (Exception e) {
+							Console.WriteLine (e.ToString ());
+						}
+					}
+					break;
 				}
 			}
 			return true;

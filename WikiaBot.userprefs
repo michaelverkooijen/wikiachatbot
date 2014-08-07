@@ -5,7 +5,7 @@
       <File FileName="Program.cs" Line="1" Column="1" />
       <File FileName="CookieClient.cs" Line="1" Column="1" />
       <File FileName="ConnectionManager.cs" Line="1" Column="1" />
-      <File FileName="ChatModule.cs" Line="178" Column="1" />
+      <File FileName="ChatModule.cs" Line="112" Column="35" />
       <File FileName="YoutubeModule.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
