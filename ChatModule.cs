@@ -9,15 +9,18 @@ using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Numerics;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 namespace WikiaBot {
 	public class ChatModule {
 		private string wiki, user, pass, youtubeCredentials, chatKey, xhrKey, nodeHost;
+		private string[] patterns = {"fu?ck", "shit", "fag", "gay"};
 		private int roomId;
 		ConnectionManager cm;
 		ArrayList namesBlacklist;
+		private Boolean isMod, doesWelcome;
 
-		public ChatModule (string wiki, string user, string pass, string youtubeCredentials) {
+		public ChatModule (string wiki, string user, string pass, string youtubeCredentials, Boolean isMod, Boolean doesWelcome) {
 			this.wiki = wiki;
 			this.user = user;
 			this.pass = pass;
@@ -25,6 +28,8 @@ namespace WikiaBot {
 			cm = new ConnectionManager ("http://" + wiki + ".wikia.com", "wikicities");
 			namesBlacklist = new ArrayList ();
 			namesBlacklist.Add (user); //prevent bot from talking to itself
+			this.isMod = isMod;
+			this.doesWelcome = doesWelcome;
 		}
 		//TODO: mid-session logins
 		public bool start () {
@@ -132,6 +137,9 @@ namespace WikiaBot {
 						} catch (Exception e) {
 							Console.WriteLine (e.ToString ());
 						}
+						if (isMod && containsBadLanguage (text)) {
+							speak (name + ", please watch your language.");
+						}
 						/*if (text.Contains ("youtube")) {
 						string[] words = text.Split(' ');
 						foreach (string word in words){
@@ -220,6 +228,15 @@ namespace WikiaBot {
 				"key=" + chatKey,
 				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds
 			}, body);
+		}
+
+		private Boolean containsBadLanguage (string s) {
+			foreach (string pattern in patterns) {
+				if (Regex.IsMatch (s, pattern, RegexOptions.IgnoreCase)) {
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 }
