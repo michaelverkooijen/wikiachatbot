@@ -14,7 +14,8 @@ using System.Text.RegularExpressions;
 namespace WikiaBot {
 	public class ChatModule {
 		private string wiki, user, pass, youtubeCredentials, chatKey, xhrKey, nodeHost;
-		private string[] patterns = {"fu?ck", "shit", "fag", "gay"};
+		//TODO: replace with settings.json
+		private string[] patterns = {"fu?ck", "[s$]hit", "f[a@]g", "g[a@]y", "cunt", "wanker", "d[i!]ck", "nigg[ae]r?", "slut", "wh[o0]re", "c[o0]ck"};
 		private int roomId;
 		ConnectionManager cm;
 		ArrayList namesBlacklist;
@@ -140,7 +141,7 @@ namespace WikiaBot {
 						if (isMod && containsBadLanguage (text)) {
 							speak (name + ", please watch your language.");
 						}
-						/*if (text.Contains ("youtube")) {
+						/*if (text.Contains ("youtube")) { //TODO: regex: youtu.?be
 						string[] words = text.Split(' ');
 						foreach (string word in words){
 							string[] args = word.Split ('?');
@@ -164,11 +165,13 @@ namespace WikiaBot {
 					break;
 				case "join":
 					{
-						var data = JObject.Parse ((string)o ["data"]);
-						string name = (string)data ["attrs"] ["name"];
-						if (!namesBlacklist.Contains (name)) {
-							speak ("Hello there, " + name + "!");
-							namesBlacklist.Add (name);
+						if (doesWelcome) {
+							var data = JObject.Parse ((string)o ["data"]);
+							string name = (string)data ["attrs"] ["name"];
+							if (!namesBlacklist.Contains (name)) {
+								speak ("Hello there, " + name + "!");
+								namesBlacklist.Add (name);
+							}
 						}
 					}
 					break;
