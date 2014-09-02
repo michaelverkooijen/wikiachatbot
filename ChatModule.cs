@@ -13,9 +13,9 @@ using System.Text.RegularExpressions;
 
 namespace WikiaBot {
 	public class ChatModule {
-		private string wiki, user, pass, youtubeCredentials, chatKey, xhrKey, nodeHost;
+		private string wiki, user, pass, youtubeCredentials, chatKey, xhrKey, nodeHost, nodeInstance;
 		//TODO: replace with settings.json
-		private string[] patterns = {"fu?ck", "[s$]hit", "f[a@]g", "g[a@]y", "cunt", "wanker", "d[i!]ck", "nigg[ae]r?", "slut", "wh[o0]re", "c[o0]ck"};
+		private string[] patterns = {"fu?ck", "f[a@]g", "cunt", "wanker", "d[i!]ck", "nigg[ae]r?", "slut", "wh[o0]re", "c[o0]ck"};
 		private int roomId;
 		ConnectionManager cm;
 		ArrayList namesBlacklist;
@@ -52,6 +52,7 @@ namespace WikiaBot {
 			chatKey = (string)o ["chatkey"];
 			roomId = (int)o ["roomId"];
 			nodeHost = (string)o ["nodeHostname"];
+			nodeInstance = (int)o ["nodeInstance"];
 			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
 			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
 			int failCount = 0;
@@ -139,7 +140,23 @@ namespace WikiaBot {
 							Console.WriteLine (e.ToString ());
 						}
 						if (isMod && containsBadLanguage (text)) {
-							speak (name + ", please watch your language.");
+							Random r = new Random ();
+							switch (r.Next (6)) {
+							case 0:
+								speak (name + ", please watch your language.");
+								break;
+							case 1:
+								speak ("Please refrain from using bad words");
+								break;
+							}
+						}
+						if (name.Equals("Flightmare") && text.Equals("!tm")) { 
+							isMod = !isMod;
+							speak ("Moderate chat: " + isMod.ToString());
+						}
+						if (name.Equals("Flightmare") && text.Equals("!tw")) { 
+							doesWelcome = !doesWelcome;
+							speak ("Welcome users: " + doesWelcome.ToString());
 						}
 						/*if (text.Contains ("youtube")) { //TODO: regex: youtu.?be
 						string[] words = text.Split(' ');
@@ -175,6 +192,7 @@ namespace WikiaBot {
 						}
 					}
 					break;
+					//case "part" //TODO: check json, remove user from warnlist
 				case "kick":
 					{
 						var data = JObject.Parse ((string)o ["data"]);
