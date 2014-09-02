@@ -13,10 +13,10 @@ using System.Text.RegularExpressions;
 
 namespace WikiaBot {
 	public class ChatModule {
-		private string wiki, user, pass, youtubeCredentials, chatKey, xhrKey, nodeHost, nodeInstance;
+		private string wiki, user, pass, youtubeCredentials, chatKey, xhrKey, nodeHost;
 		//TODO: replace with settings.json
 		private string[] patterns = {"fu?ck", "f[a@]g", "cunt", "wanker", "d[i!]ck", "nigg[ae]r?", "slut", "wh[o0]re", "c[o0]ck"};
-		private int roomId;
+		private int roomId, nodeInstance;
 		ConnectionManager cm;
 		ArrayList namesBlacklist;
 		private Boolean isMod, doesWelcome;
@@ -61,10 +61,33 @@ namespace WikiaBot {
 			//enter poll loop:
 			//make fallback escape from loop
 			while (failCount < 5) {
-				if (xhrKey != null && !lastResponse.Equals ("")) {
+				Console.WriteLine ("Reading chat...");
+				try {
+					lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/", new string[] {
+						"name=" + user,
+						"key=" + chatKey,
+						"roomId=" + roomId.ToString (),
+						"serverId=" + nodeHost.ToString(),
+						"EIO=2",
+						"transport=polling",
+						"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds
+						//"sid="
+					}); //read chat
+					Console.WriteLine (lastResponse);
+					//�433�
+					string[] lines = lastResponse.Split ('\ufffd');
+					foreach (string line in lines) {
+						parseResponse (line);
+					}
+				} catch (Exception e) {
+					lastResponse = "";
+					failCount++;
+					Console.WriteLine ("FAILED reading chat: " + e.ToString ());
+				}
+				/*if (xhrKey != null && !lastResponse.Equals ("")) {
 					Console.WriteLine ("Reading chat...");
 					try {
-						lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/1/xhr-polling/" + xhrKey, new string[] {
+						lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/", new string[] {
 							"name=" + user,
 							"roomId=" + roomId.ToString (),
 							"key=" + chatKey,
@@ -84,7 +107,7 @@ namespace WikiaBot {
 				} else {
 					Console.WriteLine ("Requesting xhr key...");
 					try { 
-						lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/1/xhr-polling/", new string[] {
+						lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/", new string[] {
 							"name=" + user,
 							"roomId=" + roomId.ToString (),
 							"key=" + chatKey,
@@ -99,7 +122,7 @@ namespace WikiaBot {
 					if (x > 0) {
 						xhrKey = lastResponse.Substring (0, x);
 					}
-				}
+				}*/
 				failCount = 0; //cycle is success, reset fail counter
 				Thread.Sleep (1000);
 			}
@@ -243,11 +266,15 @@ namespace WikiaBot {
 
 		private void speak (string s) {
 			string body = "5:::{\"name\":\"message\",\"args\":[\"{\\\"id\\\":null,\\\"cid\\\":\\\"c31\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"chat\\\",\\\"roomId\\\":" + roomId.ToString () + ",\\\"name\\\":\\\"" + user + "\\\",\\\"text\\\":\\\"" + s + "\\\",\\\"avatarSrc\\\":\\\"\\\",\\\"timeStamp\\\":\\\"\\\",\\\"continued\\\":false,\\\"temp\\\":false}}\"]}";
-			cm.PostRequest ("http://" + nodeHost + "/socket.io/1/xhr-polling/" + xhrKey, new string[] {
+			cm.PostRequest ("http://" + nodeHost + "/socket.io/", new string[] {
 				"name=" + user,
-				"roomId=" + roomId.ToString (),
 				"key=" + chatKey,
+				"roomId=" + roomId.ToString (),
+				"serverId=" + nodeHost.ToString(),
+				"EIO=2",
+				"transport=polling",
 				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds
+				//"sid="
 			}, body);
 		}
 
