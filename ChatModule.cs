@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 
 namespace WikiaBot {
 	public class ChatModule {
-		private string wiki, user, pass, youtubeCredentials, chatKey, xhrKey, nodeHost;
+		private string wiki, user, pass, youtubeCredentials, chatKey, sid, nodeHost;
 		//TODO: replace with settings.json
 		private string[] patterns = {"fu?ck", "f[a@]g", "cunt", "wanker", "d[i!]ck", "nigg[ae]r?", "slut", "wh[o0]re", "c[o0]ck"};
 		private int roomId, nodeInstance;
@@ -56,7 +56,7 @@ namespace WikiaBot {
 			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
 			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
 			int failCount = 0;
-			xhrKey = null;
+			sid = null;
 			string lastResponse = "";
 			//enter poll loop:
 			//make fallback escape from loop
@@ -67,14 +67,14 @@ namespace WikiaBot {
 						"name=" + user,
 						"key=" + chatKey,
 						"roomId=" + roomId.ToString (),
-						"serverId=" + nodeHost.ToString(),
+						"serverId=" + nodeInstance.ToString(),
 						"EIO=2",
 						"transport=polling",
-						"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds
-						//"sid="
+						//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+						"sid=" + sid
 					}); //read chat
 					Console.WriteLine (lastResponse);
-					//�433�
+					//�433� TODO: check new noise filter for this stuff
 					string[] lines = lastResponse.Split ('\ufffd');
 					foreach (string line in lines) {
 						parseResponse (line);
@@ -83,6 +83,7 @@ namespace WikiaBot {
 					lastResponse = "";
 					failCount++;
 					Console.WriteLine ("FAILED reading chat: " + e.ToString ());
+					sid = null;
 				}
 				/*if (xhrKey != null && !lastResponse.Equals ("")) {
 					Console.WriteLine ("Reading chat...");
@@ -124,7 +125,7 @@ namespace WikiaBot {
 					}
 				}*/
 				failCount = 0; //cycle is success, reset fail counter
-				Thread.Sleep (1000);
+				Thread.Sleep (2500);
 			}
 			return false;
 		}
@@ -132,14 +133,23 @@ namespace WikiaBot {
 		private bool parseResponse (string s) {
 			int prefix = s.IndexOf ("\"");
 			prefix--;
-			//Console.WriteLine(prefix); //4 etc
+			Console.WriteLine(prefix); //4 etc
 			if (prefix > 0) {
 				s = s.Substring (prefix, s.Length - prefix);
 				//Console.WriteLine(s); full string without 4::
+				var token = JToken.Parse (s);
+				if (token is JArray) {
+					s = (string)token.Last;
+					//var o = JArray.Parse (s); //second element contains expected JObject
+				}
 				var o = JObject.Parse (s);
 				string eve = (string)o ["event"];
 				//Console.WriteLine(eve);
 				switch (eve) {
+				case "sid":
+					sid = JObject.Parse ((string)o ["sid"]).ToString ();
+					Console.WriteLine ("new sid: " + sid);
+					break;
 				case "chat:add":
 					{
 						var data = JObject.Parse ((string)o ["data"]);
