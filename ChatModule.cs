@@ -83,8 +83,9 @@ namespace WikiaBot {
 						//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
 						"sid=" + sid
 					}); //read chat
+					lastResponse = Regex.Replace(lastResponse, @"[\u0000-\u0007]", string.Empty); //removes ETX, EOT sent by server
 					Console.WriteLine (lastResponse);
-					//�433� TODO: check new noise filter for this stuff
+					//�433�
 					string[] lines = lastResponse.Split ('\ufffd');
 					foreach (string line in lines) {
 						parseResponse (line);
@@ -92,50 +93,11 @@ namespace WikiaBot {
 				} catch (Exception e) {
 					lastResponse = "";
 					failCount++;
-					Console.WriteLine ("FAILED reading chat: " + e.ToString ());
 					sid = null;
+					Console.WriteLine ("FAILED reading chat: " + e.ToString ());
 				}
-				/*if (xhrKey != null && !lastResponse.Equals ("")) {
-					Console.WriteLine ("Reading chat...");
-					try {
-						lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/", new string[] {
-							"name=" + user,
-							"roomId=" + roomId.ToString (),
-							"key=" + chatKey,
-							//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds
-						}); //read chat
-						Console.WriteLine (lastResponse);
-						//�433�
-						string[] lines = lastResponse.Split ('\ufffd');
-						foreach (string line in lines) {
-							parseResponse (line);
-						}
-					} catch (Exception e) {
-						lastResponse = "";
-						failCount++;
-						Console.WriteLine ("FAILED reading chat: " + e.ToString ());
-					}
-				} else {
-					Console.WriteLine ("Requesting xhr key...");
-					try { 
-						lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/", new string[] {
-							"name=" + user,
-							"roomId=" + roomId.ToString (),
-							"key=" + chatKey,
-							//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString
-						});
-					} catch (Exception e) {
-						lastResponse = "";
-						failCount++;
-						Console.WriteLine ("FAILED requesting key: " + e.ToString ());
-					}
-					int x = lastResponse.IndexOf (":");
-					if (x > 0) {
-						xhrKey = lastResponse.Substring (0, x);
-					}
-				}*/
 				failCount = 0; //cycle is success, reset fail counter
-				Thread.Sleep (2500);
+				Thread.Sleep (1000);
 			}
 			return false;
 		}

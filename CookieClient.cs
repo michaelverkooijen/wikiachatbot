@@ -21,6 +21,7 @@ namespace WikiaBot {
             }
             HttpWebRequest httpRequest = (HttpWebRequest)request;
             httpRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+			httpRequest.Timeout = 60000;
             return httpRequest;
         }
 
