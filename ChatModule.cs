@@ -78,9 +78,9 @@ namespace WikiaBot {
 						"key=" + chatKey,
 						"roomId=" + roomId.ToString (),
 						"serverId=" + nodeInstance.ToString (),
-						"EIO=2",
+						"EIO=3",
 						"transport=polling",
-						//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+						"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
 						"sid=" + sid
 					}); //read chat
 					lastResponse = Regex.Replace(lastResponse, @"[\u0000-\u0007]", string.Empty); //removes ETX, EOT sent by server
@@ -97,7 +97,7 @@ namespace WikiaBot {
 					Console.WriteLine ("FAILED reading chat: " + e.ToString ());
 				}
 				failCount = 0; //cycle is success, reset fail counter
-				Thread.Sleep (1000);
+				Thread.Sleep (2000);
 			}
 			return false;
 		}
@@ -255,10 +255,10 @@ namespace WikiaBot {
 				"key=" + chatKey,
 				"roomId=" + roomId.ToString (),
 				"serverId=" + nodeHost.ToString (),
-				"EIO=2",
+				"EIO=3",
 				"transport=polling",
-				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds
-				//"sid="
+				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+				"sid=" + sid
 			}, body);
 		}
 
