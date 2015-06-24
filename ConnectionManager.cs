@@ -22,8 +22,11 @@ namespace WikiaBot {
 			c.Name = cookieName;
 			//cookieJar.Add(new Cookie("wikicities", "cookie_value", "/", ".wikia.com"));
 			cookieJar.Add (c);
-			client.Headers.Add ("user-agent", "Flightmare/chatbot");
-			client.Headers.Add ("Connection", "Keep-Alive");
+			client.Headers.Add ("User-Agent", "Flightmare/chatbot");
+			client.Headers.Add ("Origin", "http://elderscrolls.wikia.com");
+			client.Headers.Add ("Accept", "*/*");
+			client.Headers.Add ("Referer", "http://elderscrolls.wikia.com/wiki/Special:Chat");
+			client.Headers.Add ("Accept-Encoding", "gzip, deflate");
 		}
 
 		/// <summary>
@@ -79,6 +82,7 @@ namespace WikiaBot {
 				Console.WriteLine ("result: " + result);
 				if (result.Equals ("Success")) {
 					Console.WriteLine ("success!");
+					client.Headers [HttpRequestHeader.ContentType] = "text/plain;charset=UTF-8";
 					return true;
 				}
 				if (result.Equals ("NeedToken")) {
@@ -92,6 +96,7 @@ namespace WikiaBot {
 				Console.WriteLine ("result: " + result);
 				if (result.Equals ("Success")) {
 					Console.WriteLine ("success!");
+					client.Headers [HttpRequestHeader.ContentType] = "text/plain;charset=UTF-8";
 					return true;
 				}
 			}

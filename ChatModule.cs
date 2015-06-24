@@ -71,8 +71,8 @@ namespace WikiaBot {
 			//enter poll loop:
 			//make fallback escape from loop
 			while (failCount < 5) {
-				Console.WriteLine ("Reading chat...");
 				try {
+					Console.WriteLine ("Reading chat...");
 					lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/", new string[] {
 						"name=" + user,
 						"key=" + chatKey,
@@ -98,6 +98,8 @@ namespace WikiaBot {
 				}
 				failCount = 0; //cycle is success, reset fail counter
 				Thread.Sleep (1000);
+				Console.WriteLine ("Sending heartbeat");
+				sendHeartbeat();
 			}
 			return false;
 		}
@@ -250,6 +252,20 @@ namespace WikiaBot {
 
 		private void speak (string s) {
 			string body = "5:::{\"name\":\"message\",\"args\":[\"{\\\"id\\\":null,\\\"cid\\\":\\\"c31\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"chat\\\",\\\"roomId\\\":" + roomId.ToString () + ",\\\"name\\\":\\\"" + user + "\\\",\\\"text\\\":\\\"" + s + "\\\",\\\"avatarSrc\\\":\\\"\\\",\\\"timeStamp\\\":\\\"\\\",\\\"continued\\\":false,\\\"temp\\\":false}}\"]}";
+			cm.PostRequest ("http://" + nodeHost + "/socket.io/", new string[] {
+				"name=" + user,
+				"key=" + chatKey,
+				"roomId=" + roomId.ToString (),
+				"serverId=" + nodeInstance.ToString (),
+				"EIO=3",
+				"transport=polling",
+				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+				"sid=" + sid
+			}, body);
+		}
+
+		private void sendHeartbeat() {
+			string body = "1:2";
 			cm.PostRequest ("http://" + nodeHost + "/socket.io/", new string[] {
 				"name=" + user,
 				"key=" + chatKey,
