@@ -82,7 +82,7 @@ namespace WikiaBot {
 				Console.WriteLine ("result: " + result);
 				if (result.Equals ("Success")) {
 					Console.WriteLine ("success!");
-					client.Headers [HttpRequestHeader.ContentType] = "text/plain;charset=UTF-8";
+					client.Headers [HttpRequestHeader.ContentType] = "application/json";
 					return true;
 				}
 				if (result.Equals ("NeedToken")) {
@@ -96,7 +96,7 @@ namespace WikiaBot {
 				Console.WriteLine ("result: " + result);
 				if (result.Equals ("Success")) {
 					Console.WriteLine ("success!");
-					client.Headers [HttpRequestHeader.ContentType] = "text/plain;charset=UTF-8";
+					client.Headers [HttpRequestHeader.ContentType] = "application/json"; //text/plain;charset=UTF-8
 					return true;
 				}
 			}

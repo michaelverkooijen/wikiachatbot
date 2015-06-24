@@ -90,6 +90,9 @@ namespace WikiaBot {
 					foreach (string line in lines) {
 						parseResponse (line);
 					}
+					Thread.Sleep (1000);
+					Console.WriteLine ("Sending heartbeat");
+					sendHeartbeat();
 				} catch (Exception e) {
 					lastResponse = "";
 					failCount++;
@@ -98,13 +101,15 @@ namespace WikiaBot {
 				}
 				failCount = 0; //cycle is success, reset fail counter
 				Thread.Sleep (1000);
-				Console.WriteLine ("Sending heartbeat");
-				sendHeartbeat();
 			}
 			return false;
 		}
 
+		//TODO: trim trailing whitespaces. s.TrimEnd is garbage maybe \r\n is what I'm missing here.
 		private bool parseResponse (string s) {
+			Console.Write("Length before string: " + s.Length.ToString());
+			s = s.TrimEnd('\r', '\n', ' ');
+			Console.WriteLine (" after trim:" + s.Length.ToString());
 			int prefix = s.IndexOf ("\"");
 			prefix--;
 			Console.WriteLine (prefix); //4 etc
