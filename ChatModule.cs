@@ -97,7 +97,7 @@ namespace WikiaBot {
 					Console.WriteLine ("FAILED reading chat: " + e.ToString ());
 				}
 				failCount = 0; //cycle is success, reset fail counter
-				Thread.Sleep (2000);
+				Thread.Sleep (1000);
 			}
 			return false;
 		}
@@ -254,7 +254,7 @@ namespace WikiaBot {
 				"name=" + user,
 				"key=" + chatKey,
 				"roomId=" + roomId.ToString (),
-				"serverId=" + nodeHost.ToString (),
+				"serverId=" + nodeInstance.ToString (),
 				"EIO=3",
 				"transport=polling",
 				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
