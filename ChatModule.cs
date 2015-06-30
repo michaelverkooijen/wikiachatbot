@@ -88,6 +88,10 @@ namespace WikiaBot {
 					//�433�
 					string[] lines = lastResponse.Split ('\ufffd');
 					foreach (string line in lines) {
+						//Test for unexpected authentication failures
+						if(line.Equals("User failed authentication (1)")) {
+							return false;
+						}
 						parseResponse (line);
 					}
 					Thread.Sleep (1000);
