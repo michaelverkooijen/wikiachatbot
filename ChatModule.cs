@@ -83,20 +83,20 @@ namespace WikiaBot {
 						"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
 						"sid=" + sid
 					}); //read chat
-					lastResponse = Regex.Replace(lastResponse, @"[\u0000-\u0007]", string.Empty); //removes ETX, EOT sent by server
+					lastResponse = Regex.Replace (lastResponse, @"[\u0000-\u0007]", string.Empty); //removes ETX, EOT sent by server
 					Console.WriteLine (lastResponse);
 					//�433�
 					string[] lines = lastResponse.Split ('\ufffd');
 					foreach (string line in lines) {
 						//Test for unexpected authentication failures
-						if(line.Equals("4\"User failed authentication (1)\"")) {
+						if (line.Equals ("4\"User failed authentication (1)\"")) {
 							return false;
 						}
 						parseResponse (line);
 					}
 					Thread.Sleep (1000);
 					Console.WriteLine ("Sending heartbeat");
-					sendHeartbeat();
+					sendHeartbeat ();
 				} catch (Exception e) {
 					lastResponse = "";
 					failCount++;
@@ -109,22 +109,21 @@ namespace WikiaBot {
 			return false;
 		}
 
-		//TODO: trim trailing whitespaces. s.TrimEnd is garbage maybe \r\n is what I'm missing here.
+		//TODO: validate trimming
 		private bool parseResponse (string s) {
-			Console.Write("Length before string: " + s.Length.ToString());
-			s = s.TrimEnd('\r', '\n', ' ');
-			Console.WriteLine (" after trim:" + s.Length.ToString());
+			Console.Write ("Length before string: " + s.Length.ToString ());
+			s = s.TrimEnd ('\r', '\n', ' ');
+			Console.WriteLine (" after trim:" + s.Length.ToString ());
 			int prefix = s.IndexOf ("\"");
 			prefix--;
 			Console.WriteLine (prefix); //4 etc
 			if (prefix > 0) {
 				s = s.Substring (prefix, s.Length - prefix);
-				//Console.WriteLine(s); full string without 4::
 				Console.WriteLine ("Stripped string: " + s);
 				var token = JToken.Parse (s);
 				if (token is JArray) {
 					Console.WriteLine ("JArray detected!");
-					s = (string)token.Last.ToString();
+					s = (string)token.Last.ToString ();
 					var o = JObject.Parse (s);
 					string eve = (string)o ["event"];
 					Console.WriteLine (eve);
@@ -170,26 +169,26 @@ namespace WikiaBot {
 								doesWelcome = !doesWelcome;
 								speak ("Welcome users: " + doesWelcome.ToString ());
 							}
-							/*if (text.Contains ("youtube")) { //TODO: regex: youtu.?be
-						string[] words = text.Split(' ');
-						foreach (string word in words){
-							string[] args = word.Split ('?');
-							foreach (string argument in args) {
-								string[] subargs = argument.Split ('&');
-								foreach (string subarg in subargs) {
-									if (subarg.Contains("v=")) {
-										string videoId = subarg.Replace ("v=", "");
-										Console.WriteLine ("Found Video ID: " + videoId);
-										string videoTitle = YoutubeModule.GetVideoTitle (videoId, youtubeCredentials);
-										Console.WriteLine ("Video Title: " + videoTitle);
-										if (!videoTitle.Equals("")) {
-											speak (videoTitle);
+							if (Regex.IsMatch (text, "https?://(www.)?youtu.?be", RegexOptions.IgnoreCase)) { //text.Contains ("youtube")
+								string[] words = text.Split (' ');
+								foreach (string word in words) {
+									string[] args = word.Split ('?');
+									foreach (string argument in args) {
+										string[] subargs = argument.Split ('&');
+										foreach (string subarg in subargs) {
+											if (subarg.Contains ("v=")) {
+												string videoId = subarg.Replace ("v=", "");
+												Console.WriteLine ("Found Video ID: " + videoId);
+												string videoTitle = YoutubeModule.GetVideoTitle (videoId, youtubeCredentials);
+												Console.WriteLine ("Video Title: " + videoTitle);
+												if (videoTitle != null) {
+													speak (videoTitle);
+												}
+											}
 										}
 									}
 								}
 							}
-						}
-					}*/
 						}
 						break;
 					case "join":
@@ -261,11 +260,10 @@ namespace WikiaBot {
 
 		private void speak (string s) {
 			//TODO: is cid required?
-			//string body2 = "5:::{\"name\":\"message\",\"args\":[\"{\\\"id\\\":null,\\\"cid\\\":\\\"c31\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"chat\\\",\\\"roomId\\\":" + roomId.ToString () + ",\\\"name\\\":\\\"" + user + "\\\",\\\"text\\\":\\\"" + s + "\\\",\\\"avatarSrc\\\":\\\"\\\",\\\"timeStamp\\\":\\\"\\\",\\\"continued\\\":false,\\\"temp\\\":false}}\"]}";
 			string body = "42[\"message\",\"{\\\"id\\\":null,\\\"cid\\\":\\\"c328\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"chat\\\",\\\"roomId\\\":" + roomId.ToString () + ",\\\"name\\\":\\\"" + user + "\\\",\\\"text\\\":\\\"" + s + "\\\",\\\"avatarSrc\\\":\\\"\\\",\\\"timeStamp\\\":\\\"\\\",\\\"continued\\\":false,\\\"temp\\\":false}}\"]";
 			//add length header to body:
-			body = body.Length.ToString() + ":" + body;
-			Console.WriteLine ("POST message: "+body);
+			body = body.Length.ToString () + ":" + body;
+			Console.WriteLine ("POST message: " + body);
 			cm.PostRequest ("http://" + nodeHost + "/socket.io/", new string[] {
 				"name=" + user,
 				"key=" + chatKey,
@@ -278,7 +276,7 @@ namespace WikiaBot {
 			}, body);
 		}
 
-		private void sendHeartbeat() {
+		private void sendHeartbeat () {
 			string body = "1:2";
 			cm.PostRequest ("http://" + nodeHost + "/socket.io/", new string[] {
 				"name=" + user,

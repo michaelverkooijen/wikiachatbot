@@ -8,9 +8,16 @@ using System.Text;
 using Newtonsoft.Json.Schema;
 
 namespace WikiaBot {
+	//TODO: verify certificates
 	public class ConnectionManager {
 		CookieContainer cookieJar;
-		CookieClient client;
+		WebClient client; //CookieClient parent
+
+		public ConnectionManager() {
+			client = new WebClient ();
+			client.Headers.Add ("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36");
+			ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+		}
 
 		public ConnectionManager (string cookieDomain, string cookieName) {
 			client = new CookieClient ();
@@ -27,6 +34,7 @@ namespace WikiaBot {
 			client.Headers.Add ("Accept", "*/*");
 			client.Headers.Add ("Referer", "http://elderscrolls.wikia.com/wiki/Special:Chat");
 			client.Headers.Add ("Accept-Encoding", "gzip, deflate");
+			//ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 		}
 
 		/// <summary>
