@@ -75,7 +75,18 @@ namespace WikiaBot {
 				Console.WriteLine (e.ToString ());
 				return false;
 			}
-			getChatController ();
+			//get wgchatkey
+			string response = cm.GetRequest ("http://" + wiki + ".wikia.com/wikia.php", new string[] {
+				"controller=Chat",
+				"format=json"
+			});
+			var o = JObject.Parse (response);
+			chatKey = (string)o ["chatkey"];
+			roomId = (int)o ["roomId"];
+			nodeHost = (string)o ["nodeHostname"];
+			nodeInstance = (int)o ["nodeInstance"];
+			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
+			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
 			int failCount = 0;
 			sid = null;
 			string lastResponse = "";
@@ -113,7 +124,6 @@ namespace WikiaBot {
 					failCount++;
 					sid = null;
 					Console.WriteLine ("FAILED reading chat: " + e.ToString ());
-					getChatController ();
 				}
 				failCount = 0; //cycle is success, reset fail counter
 				Thread.Sleep (1000);
@@ -181,7 +191,7 @@ namespace WikiaBot {
 								doesWelcome = !doesWelcome;
 								speak ("Welcome users: " + doesWelcome.ToString ());
 							}
-							if (Regex.IsMatch (text, "https?://(www.)?youtu.?be", RegexOptions.IgnoreCase)) { //text.Contains ("youtube")
+							if (Regex.IsMatch (text, "https?://(www.)?(m.)?youtu.?be", RegexOptions.IgnoreCase)) { //text.Contains ("youtube")
 								string[] words = text.Split (' ');
 								foreach (string word in words) {
 									string[] args = word.Split ('?');
