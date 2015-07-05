@@ -4,9 +4,9 @@
     <Files>
       <File FileName="Program.cs" Line="1" Column="1" />
       <File FileName="CookieClient.cs" Line="1" Column="1" />
-      <File FileName="ConnectionManager.cs" Line="1" Column="1" />
-      <File FileName="ChatModule.cs" Line="256" Column="1" />
-      <File FileName="YoutubeModule.cs" Line="1" Column="1" />
+      <File FileName="ConnectionManager.cs" Line="27" Column="29" />
+      <File FileName="ChatModule.cs" Line="190" Column="10" />
+      <File FileName="YoutubeModule.cs" Line="33" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -42,6 +42,28 @@ namespace WikiaBot {
 			this.isMod = isMod;
 			this.doesWelcome = doesWelcome;
 		}
+
+		public bool getChatController () {
+			try {
+				//get wgchatkey
+				string response = cm.GetRequest ("http://" + wiki + ".wikia.com/wikia.php", new string[] {
+					"controller=Chat",
+					"format=json"
+				});
+				var o = JObject.Parse (response);
+				chatKey = (string)o ["chatkey"];
+				roomId = (int)o ["roomId"];
+				nodeHost = (string)o ["nodeHostname"];
+				nodeInstance = (int)o ["nodeInstance"];
+				Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
+				Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
+				return true;
+			} catch (Exception e) {
+				Console.WriteLine (e.ToString());
+				return false;
+			}
+		}
+
 		//TODO: mid-session logins
 		public bool start () {
 			//logging in:
@@ -53,18 +75,7 @@ namespace WikiaBot {
 				Console.WriteLine (e.ToString ());
 				return false;
 			}
-			//get wgchatkey
-			string response = cm.GetRequest ("http://" + wiki + ".wikia.com/wikia.php", new string[] {
-				"controller=Chat",
-				"format=json"
-			});
-			var o = JObject.Parse (response);
-			chatKey = (string)o ["chatkey"];
-			roomId = (int)o ["roomId"];
-			nodeHost = (string)o ["nodeHostname"];
-			nodeInstance = (int)o ["nodeInstance"];
-			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
-			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
+			getChatController ();
 			int failCount = 0;
 			sid = null;
 			string lastResponse = "";
@@ -102,6 +113,7 @@ namespace WikiaBot {
 					failCount++;
 					sid = null;
 					Console.WriteLine ("FAILED reading chat: " + e.ToString ());
+					getChatController ();
 				}
 				failCount = 0; //cycle is success, reset fail counter
 				Thread.Sleep (1000);
@@ -111,22 +123,22 @@ namespace WikiaBot {
 
 		//TODO: validate trimming
 		private bool parseResponse (string s) {
-			Console.Write ("Length before string: " + s.Length.ToString ());
+			//Console.Write ("Length before trim: " + s.Length.ToString ());
 			s = s.TrimEnd ('\r', '\n', ' ');
-			Console.WriteLine (" after trim:" + s.Length.ToString ());
+			//Console.WriteLine (" after trim:" + s.Length.ToString ());
 			int prefix = s.IndexOf ("\"");
 			prefix--;
-			Console.WriteLine (prefix); //4 etc
+			//Console.WriteLine (prefix); //4 etc
 			if (prefix > 0) {
 				s = s.Substring (prefix, s.Length - prefix);
-				Console.WriteLine ("Stripped string: " + s);
+				//Console.WriteLine ("Stripped string: " + s);
 				var token = JToken.Parse (s);
 				if (token is JArray) {
-					Console.WriteLine ("JArray detected!");
+					//Console.WriteLine ("JArray detected!");
 					s = (string)token.Last.ToString ();
 					var o = JObject.Parse (s);
 					string eve = (string)o ["event"];
-					Console.WriteLine (eve);
+					//Console.WriteLine (eve);
 					switch (eve) {
 					case "chat:add":
 						{
@@ -181,7 +193,7 @@ namespace WikiaBot {
 												Console.WriteLine ("Found Video ID: " + videoId);
 												string videoTitle = YoutubeModule.GetVideoTitle (videoId, youtubeCredentials);
 												Console.WriteLine ("Video Title: " + videoTitle);
-												if (videoTitle != null) {
+												if (videoTitle != null && !containsBadLanguage(videoTitle)) {
 													speak (videoTitle);
 												}
 											}
