@@ -2,11 +2,11 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="ChatModule.cs">
     <Files>
-      <File FileName="Program.cs" Line="1" Column="1" />
-      <File FileName="CookieClient.cs" Line="24" Column="28" />
-      <File FileName="ConnectionManager.cs" Line="27" Column="29" />
-      <File FileName="ChatModule.cs" Line="108" Column="21" />
-      <File FileName="YoutubeModule.cs" Line="33" Column="1" />
+      <File FileName="Program.cs" Line="40" Column="1" />
+      <File FileName="CookieClient.cs" Line="1" Column="1" />
+      <File FileName="ConnectionManager.cs" Line="1" Column="1" />
+      <File FileName="ChatModule.cs" Line="125" Column="9" />
+      <File FileName="YoutubeModule.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

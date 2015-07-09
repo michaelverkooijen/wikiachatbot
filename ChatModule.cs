@@ -124,6 +124,13 @@ namespace WikiaBot {
 					failCount++;
 					sid = null;
 					Console.WriteLine ("FAILED reading chat: " + e.ToString ());
+					try {
+						using (StreamWriter file = File.AppendText (@"exceptions.log")) {
+							file.WriteLine ((DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ("yyyyMMdd HH:mm:ss") + ": " + e.ToString());
+						}
+					} catch (Exception ex) {
+						Console.WriteLine (ex.ToString());
+					}
 				}
 				failCount = 0; //cycle is success, reset fail counter
 				Thread.Sleep (1000);
