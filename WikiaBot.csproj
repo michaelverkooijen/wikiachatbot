@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>12.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{86EED04F-646E-488D-A2E5-65836D7EB12C}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -45,6 +45,7 @@
     <Compile Include="CookieClient.cs" />
     <Compile Include="ChatModule.cs" />
     <Compile Include="YoutubeModule.cs" />
+    <Compile Include="UploadLog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
