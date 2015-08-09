@@ -13,12 +13,22 @@ namespace WikiaBot {
 		CookieContainer cookieJar;
 		WebClient client; //CookieClient parent
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="WikiaBot.ConnectionManager"/> class.
+		/// To be used with all YouTube connections.
+		/// </summary>
 		public ConnectionManager() {
 			client = new WebClient ();
 			client.Headers.Add ("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36");
 			ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="WikiaBot.ConnectionManager"/> class.
+		/// To be used with all Wikia connections.
+		/// </summary>
+		/// <param name="cookieDomain">Cookie domain.</param>
+		/// <param name="cookieName">Cookie name.</param>
 		public ConnectionManager (string cookieDomain, string cookieName) {
 			client = new CookieClient ();
 			cookieJar = new CookieContainer ();
@@ -104,7 +114,7 @@ namespace WikiaBot {
 				Console.WriteLine ("result: " + result);
 				if (result.Equals ("Success")) {
 					Console.WriteLine ("success!");
-					client.Headers [HttpRequestHeader.ContentType] = "application/json"; //text/plain;charset=UTF-8
+					client.Headers [HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded"; //text/plain;charset=UTF-8 //TODO: changed from application/json. if bot fails, this is the issue
 					return true;
 				}
 			}
