@@ -1,13 +1,12 @@
 ﻿<Properties StartupItem="WikiaBot.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Program.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="ChatModule.cs">
     <Files>
-      <File FileName="Program.cs" Line="16" Column="25" />
+      <File FileName="Program.cs" Line="1" Column="1" />
       <File FileName="CookieClient.cs" Line="1" Column="1" />
-      <File FileName="ConnectionManager.cs" Line="1" Column="1" />
-      <File FileName="ChatModule.cs" Line="114" Column="26" />
+      <File FileName="ConnectionManager.cs" Line="114" Column="45" />
+      <File FileName="ChatModule.cs" Line="154" Column="47" />
       <File FileName="YoutubeModule.cs" Line="1" Column="1" />
-      <File FileName="UploadLog.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

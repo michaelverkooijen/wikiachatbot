@@ -100,7 +100,8 @@ namespace WikiaBot {
 				Console.WriteLine ("result: " + result);
 				if (result.Equals ("Success")) {
 					Console.WriteLine ("success!");
-					client.Headers [HttpRequestHeader.ContentType] = "application/json";
+					client.Headers [HttpRequestHeader.ContentType] = "application/octet-stream";
+					//client.Headers [HttpRequestHeader.Connection] = "keep-alive"; //TODO: Keep-Alive and Close may not be set with this property
 					return true;
 				}
 				if (result.Equals ("NeedToken")) {
@@ -114,7 +115,8 @@ namespace WikiaBot {
 				Console.WriteLine ("result: " + result);
 				if (result.Equals ("Success")) {
 					Console.WriteLine ("success!");
-					client.Headers [HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded"; //text/plain;charset=UTF-8 //TODO: changed from application/json. if bot fails, this is the issue
+					client.Headers [HttpRequestHeader.ContentType] = "application/octet-stream";
+					//client.Headers [HttpRequestHeader.Connection] = "keep-alive"; //TODO: Keep-Alive and Close may not be set with this property
 					return true;
 				}
 			}

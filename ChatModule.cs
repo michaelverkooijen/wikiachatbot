@@ -108,7 +108,8 @@ namespace WikiaBot {
 					lastResponse = Regex.Replace (lastResponse, @"[\u0000-\u0007]", string.Empty); //removes ETX, EOT sent by server
 					Console.WriteLine (lastResponse);
 					//�433�
-					string[] lines = lastResponse.Split ('\ufffd');
+					//string[] lines = lastResponse.Split ('\ufffd');
+					string[] lines = lastResponse.Split ('\u00ff'); //TODO: verify this is the correct unicode (Windows)
 					foreach (string line in lines) {
 						//Test for unexpected authentication failures
 						if (line.Equals ("44\"User failed authentication (1)\"")) {
@@ -141,14 +142,14 @@ namespace WikiaBot {
 		//TODO: validate trimming
 		private bool parseResponse (string s) {
 			//Console.Write ("Length before trim: " + s.Length.ToString ());
-			s = s.TrimEnd ('\r', '\n', ' ');
+			s = s.TrimEnd ('\r', '\n', ' ');//]?
 			//Console.WriteLine (" after trim:" + s.Length.ToString ());
 			int prefix = s.IndexOf ("\"");
 			prefix--;
 			//Console.WriteLine (prefix); //4 etc
 			if (prefix > 0) {
 				s = s.Substring (prefix, s.Length - prefix);
-				//Console.WriteLine ("Stripped string: " + s);
+				Console.WriteLine ("Stripped string: " + s);
 				var token = JToken.Parse (s);
 				if (token is JArray) {
 					//Console.WriteLine ("JArray detected!");
