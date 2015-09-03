@@ -108,8 +108,8 @@ namespace WikiaBot {
 					lastResponse = Regex.Replace (lastResponse, @"[\u0000-\u0007]", string.Empty); //removes ETX, EOT sent by server
 					Console.WriteLine (lastResponse);
 					//�433�
-					//string[] lines = lastResponse.Split ('\ufffd');
-					string[] lines = lastResponse.Split ('\u00ff'); //TODO: verify this is the correct unicode (Windows)
+					lastResponse = lastResponse.Replace('\u00ff', '\ufffd'); //Windows workaround
+					string[] lines = lastResponse.Split ('\ufffd');
 					foreach (string line in lines) {
 						//Test for unexpected authentication failures
 						if (line.Equals ("44\"User failed authentication (1)\"")) {
