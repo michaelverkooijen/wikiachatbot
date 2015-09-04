@@ -1,13 +1,7 @@
 using System;
 using System.IO;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
 using System.Threading;
-using System.Diagnostics;
-using System.Net.Mime;
-using System.Security.Cryptography;
-using System.Numerics;
 using System.Collections;
 using System.Text.RegularExpressions;
 
@@ -198,6 +192,20 @@ namespace WikiaBot {
 							if (name.Equals ("Flightmare") && text.Equals ("!tw")) { 
 								doesWelcome = !doesWelcome;
 								speak ("Welcome users: " + doesWelcome.ToString ());
+							}
+							if (text.Equals ("/me hugs KINMUNE")) {
+								Random r = new Random ();
+								switch (r.Next (3)) {
+								case 0:
+									speak ("/me hugs "+name+" back");
+									break;
+								case 1:
+									speak ("Thank you (blush)");
+									break;
+								case 2:
+									speak ("(heart)");
+									break;
+								}
 							}
 							if (Regex.IsMatch (text, "https?://(www.)?(m.)?youtu.?be", RegexOptions.IgnoreCase)) { //text.Contains ("youtube")
 								string[] words = text.Split (' ');

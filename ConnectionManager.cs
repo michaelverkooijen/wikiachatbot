@@ -1,11 +1,8 @@
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Specialized;
 using System.Net;
-using System.Numerics;
 using System.Text;
-using Newtonsoft.Json.Schema;
 
 namespace WikiaBot {
 	//TODO: verify certificates
