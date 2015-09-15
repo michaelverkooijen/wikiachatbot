@@ -193,9 +193,9 @@ namespace WikiaBot {
 								doesWelcome = !doesWelcome;
 								speak ("Welcome users: " + doesWelcome.ToString ());
 							}
-							if (text.Equals ("/me hugs KINMUNE")) {
+							if (text.Equals ("/me hugs "+user)) {
 								Random r = new Random ();
-								switch (r.Next (3)) {
+								switch (r.Next (4)) {
 								case 0:
 									speak ("/me hugs "+name+" back");
 									break;
@@ -204,6 +204,9 @@ namespace WikiaBot {
 									break;
 								case 2:
 									speak ("(heart)");
+									break;
+								case 3:
+									speak ("Eww, you are creeping me out " + name + "!");
 									break;
 								}
 							}
