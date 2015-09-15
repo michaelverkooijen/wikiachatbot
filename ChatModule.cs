@@ -4,10 +4,11 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Collections;
 using System.Text.RegularExpressions;
+using System.Net;
 
 namespace WikiaBot {
 	public class ChatModule {
-		private string wiki, user, pass, youtubeCredentials, chatKey, sid, nodeHost;
+		private string wiki, user, pass, youtubeCredentials, chatKey, sid, nodeHost, globalVariablesScript, mwconfig;
 		//TODO: replace with settings.json
 		private string[] patterns = {
 			"fu?ck",
@@ -79,6 +80,24 @@ namespace WikiaBot {
 			roomId = (int)o ["roomId"];
 			nodeHost = (string)o ["nodeHostname"];
 			nodeInstance = (int)o ["nodeInstance"];
+			/* Extracts usernames from mw.config TODO: beautify */
+			globalVariablesScript = (string)o ["globalVariablesScript"];
+			string target = "mw.config.set(";
+			int startIndex = globalVariablesScript.IndexOf(target)+target.Length;
+			int endIndex = globalVariablesScript.IndexOf(");");
+			//Console.WriteLine ("STARTINDEX: "+startIndex.ToString()+" ENDINDEX: "+endIndex.ToString()+" TOTALLENGTH: "+globalVariablesScript.Length.ToString());
+			mwconfig = globalVariablesScript.Substring(startIndex,endIndex-startIndex);
+			//fix \x26
+			mwconfig = mwconfig.Replace("\\x26","&");
+			mwconfig = mwconfig.Replace("\\x3c","<");
+			mwconfig = mwconfig.Replace("\\x3e",">");
+			//mwconfig = Regex.Replace(mwconfig, @"\\x26", "&");
+			mwconfig = WebUtility.UrlDecode(mwconfig);
+			Console.WriteLine ("mw.config: "+mwconfig);
+			o = JObject.Parse(mwconfig);
+			foreach(var obj in o["wgWikiaChatUsers"]){
+				Console.WriteLine ("User in chat: " + (string)obj["username"]);
+			}
 			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
 			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
 			int failCount = 0;
