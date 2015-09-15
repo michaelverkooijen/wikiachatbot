@@ -59,6 +59,39 @@ namespace WikiaBot {
 			}
 		}
 
+		public JObject getUserList(){
+			try {
+				//get wgchatkey
+				string response = cm.GetRequest ("http://" + wiki + ".wikia.com/wikia.php", new string[] {
+					"controller=Chat",
+					"format=json"
+				});
+				var o = JObject.Parse (response);
+				/* Extracts usernames from mw.config TODO: beautify */
+				globalVariablesScript = (string)o ["globalVariablesScript"];
+				string target = "mw.config.set(";
+				int startIndex = globalVariablesScript.IndexOf(target)+target.Length;
+				int endIndex = globalVariablesScript.IndexOf(");");
+				//Console.WriteLine ("STARTINDEX: "+startIndex.ToString()+" ENDINDEX: "+endIndex.ToString()+" TOTALLENGTH: "+globalVariablesScript.Length.ToString());
+				mwconfig = globalVariablesScript.Substring(startIndex,endIndex-startIndex);
+				//fix \x26
+				mwconfig = mwconfig.Replace("\\x26","&");
+				mwconfig = mwconfig.Replace("\\x3c","<");
+				mwconfig = mwconfig.Replace("\\x3e",">");
+				//mwconfig = Regex.Replace(mwconfig, @"\\x26", "&");
+				mwconfig = WebUtility.UrlDecode(mwconfig);
+				Console.WriteLine ("mw.config: "+mwconfig);
+				o = JObject.Parse(mwconfig);
+				foreach(var obj in o["wgWikiaChatUsers"]){
+					Console.WriteLine ("User in chat: " + (string)obj["username"]);
+				}
+				return o;
+			} catch (Exception e) {
+				Console.WriteLine (e.ToString());
+				return null;
+			}
+		}
+
 		//TODO: mid-session logins
 		public bool start () {
 			//logging in:
@@ -80,24 +113,6 @@ namespace WikiaBot {
 			roomId = (int)o ["roomId"];
 			nodeHost = (string)o ["nodeHostname"];
 			nodeInstance = (int)o ["nodeInstance"];
-			/* Extracts usernames from mw.config TODO: beautify */
-			globalVariablesScript = (string)o ["globalVariablesScript"];
-			string target = "mw.config.set(";
-			int startIndex = globalVariablesScript.IndexOf(target)+target.Length;
-			int endIndex = globalVariablesScript.IndexOf(");");
-			//Console.WriteLine ("STARTINDEX: "+startIndex.ToString()+" ENDINDEX: "+endIndex.ToString()+" TOTALLENGTH: "+globalVariablesScript.Length.ToString());
-			mwconfig = globalVariablesScript.Substring(startIndex,endIndex-startIndex);
-			//fix \x26
-			mwconfig = mwconfig.Replace("\\x26","&");
-			mwconfig = mwconfig.Replace("\\x3c","<");
-			mwconfig = mwconfig.Replace("\\x3e",">");
-			//mwconfig = Regex.Replace(mwconfig, @"\\x26", "&");
-			mwconfig = WebUtility.UrlDecode(mwconfig);
-			Console.WriteLine ("mw.config: "+mwconfig);
-			o = JObject.Parse(mwconfig);
-			foreach(var obj in o["wgWikiaChatUsers"]){
-				Console.WriteLine ("User in chat: " + (string)obj["username"]);
-			}
 			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
 			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
 			int failCount = 0;
