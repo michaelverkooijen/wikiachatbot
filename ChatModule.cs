@@ -8,7 +8,7 @@ using System.Net;
 
 namespace WikiaBot {
 	public class ChatModule {
-		private string wiki, user, pass, youtubeCredentials, chatKey, sid, nodeHost, globalVariablesScript, mwconfig;
+		private string wiki, user, pass, youtubeCredentials, chatKey, sid, nodeHost;
 		//TODO: replace with settings.json
 		private string[] patterns = {
 			"fu?ck",
@@ -21,7 +21,7 @@ namespace WikiaBot {
 			"wh[o0]re",
 			"c[o0]ck"
 		};
-		private int roomId, nodeInstance;
+		private int roomId, nodeInstance, nopCount;
 		ConnectionManager cm;
 		ArrayList namesBlacklist;
 		private Boolean isMod, doesWelcome;
@@ -59,7 +59,26 @@ namespace WikiaBot {
 			}
 		}
 
-		public JObject getUserList(){
+		//Servers might take a few minutes to update the list.
+		public JObject getUserList() {
+			try {
+				string response = cm.GetRequest ("http://" + wiki + ".wikia.com/wikia.php", new string[] {
+					"controller=ChatRail",
+					"method=GetUsers",
+					"format=json"
+				});
+				var o = JObject.Parse(response);
+				foreach(var obj in o["users"]){
+					Console.WriteLine ("User in chat: " + (string)obj["username"]);
+				}
+				return o;
+			} catch (Exception e) {
+				Console.WriteLine (e.ToString());
+				return null;
+			}
+		}
+
+		/*public JObject getUserList(){
 			try {
 				//get wgchatkey
 				string response = cm.GetRequest ("http://" + wiki + ".wikia.com/wikia.php", new string[] {
@@ -67,7 +86,7 @@ namespace WikiaBot {
 					"format=json"
 				});
 				var o = JObject.Parse (response);
-				/* Extracts usernames from mw.config TODO: beautify */
+				// Extracts usernames from mw.config TODO: beautify
 				globalVariablesScript = (string)o ["globalVariablesScript"];
 				string target = "mw.config.set(";
 				int startIndex = globalVariablesScript.IndexOf(target)+target.Length;
@@ -80,7 +99,7 @@ namespace WikiaBot {
 				mwconfig = mwconfig.Replace("\\x3e",">");
 				//mwconfig = Regex.Replace(mwconfig, @"\\x26", "&");
 				mwconfig = WebUtility.UrlDecode(mwconfig);
-				Console.WriteLine ("mw.config: "+mwconfig);
+				//Console.WriteLine ("mw.config: "+mwconfig);
 				o = JObject.Parse(mwconfig);
 				foreach(var obj in o["wgWikiaChatUsers"]){
 					Console.WriteLine ("User in chat: " + (string)obj["username"]);
@@ -90,7 +109,7 @@ namespace WikiaBot {
 				Console.WriteLine (e.ToString());
 				return null;
 			}
-		}
+		}*/
 
 		//TODO: mid-session logins
 		public bool start () {
@@ -122,7 +141,7 @@ namespace WikiaBot {
 			//make fallback escape from loop
 			while (failCount < 5) {
 				try {
-					Console.WriteLine ("Reading chat...");
+					//Console.WriteLine ("Reading chat...");
 					lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/", new string[] {
 						"name=" + user,
 						"key=" + chatKey,
@@ -134,7 +153,7 @@ namespace WikiaBot {
 						"sid=" + sid
 					}); //read chat
 					lastResponse = Regex.Replace (lastResponse, @"[\u0000-\u0007]", string.Empty); //removes ETX, EOT sent by server
-					Console.WriteLine (lastResponse);
+					//Console.WriteLine (lastResponse);
 					//�433�
 					lastResponse = lastResponse.Replace('\u00ff', '\ufffd'); //Windows workaround
 					string[] lines = lastResponse.Split ('\ufffd');
@@ -146,7 +165,7 @@ namespace WikiaBot {
 						parseResponse (line);
 					}
 					Thread.Sleep (1000);
-					Console.WriteLine ("Sending heartbeat");
+					//Console.WriteLine ("Sending heartbeat");
 					sendHeartbeat ();
 				} catch (Exception e) {
 					lastResponse = "";
@@ -163,15 +182,31 @@ namespace WikiaBot {
 				}
 				failCount = 0; //cycle is success, reset fail counter
 				Thread.Sleep (1000);
+				Console.WriteLine (nopCount.ToString());
+				if (nopCount > 300) { //circa 10 minutes of no activity
+					Console.WriteLine ("Getting user list");
+					var userList = getUserList();
+					foreach(var obj in userList["users"]){
+						if (((string)obj["username"]).Equals(user)) {
+							Console.WriteLine ("I'm still in the chat.");
+							nopCount = 0;
+						}
+					}
+					if (nopCount > 0) {
+						Console.WriteLine ("I'm no longer in the user list, reconnecting...");
+						failCount = 100;
+					}
+				}
 			}
 			return false;
 		}
 
 		//TODO: validate trimming
 		private bool parseResponse (string s) {
-			//Console.Write ("Length before trim: " + s.Length.ToString ());
 			s = s.TrimEnd ('\r', '\n', ' ');//]?
-			//Console.WriteLine (" after trim:" + s.Length.ToString ());
+			if (s.Equals("3")) {
+				nopCount++; //nothing happened, watchdog++
+			}
 			int prefix = s.IndexOf ("\"");
 			prefix--;
 			//Console.WriteLine (prefix); //4 etc
@@ -180,6 +215,7 @@ namespace WikiaBot {
 				Console.WriteLine ("Stripped string: " + s);
 				var token = JToken.Parse (s);
 				if (token is JArray) {
+					nopCount = 0; //valid sign of life, resetting watchdog
 					//Console.WriteLine ("JArray detected!");
 					s = (string)token.Last.ToString ();
 					var o = JObject.Parse (s);
@@ -227,11 +263,11 @@ namespace WikiaBot {
 								doesWelcome = !doesWelcome;
 								speak ("Welcome users: " + doesWelcome.ToString ());
 							}
-							if (text.Equals ("/me hugs "+user)) {
+							if (text.Equals ("/me hugs " + user)) {
 								Random r = new Random ();
 								switch (r.Next (4)) {
 								case 0:
-									speak ("/me hugs "+name+" back");
+									speak ("/me hugs " + name + " back");
 									break;
 								case 1:
 									speak ("Thank you (blush)");
@@ -256,7 +292,7 @@ namespace WikiaBot {
 												Console.WriteLine ("Found Video ID: " + videoId);
 												string videoTitle = YoutubeModule.GetVideoTitle (videoId, youtubeCredentials);
 												Console.WriteLine ("Video Title: " + videoTitle);
-												if (videoTitle != null && !containsBadLanguage(videoTitle)) {
+												if (videoTitle != null && !containsBadLanguage (videoTitle)) {
 													speak (videoTitle);
 												}
 											}
