@@ -3,6 +3,8 @@ using System;
 using System.Collections.Specialized;
 using System.Net;
 using System.Text;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
 
 namespace WikiaBot {
 	//TODO: verify certificates
@@ -37,9 +39,9 @@ namespace WikiaBot {
 			//cookieJar.Add(new Cookie("wikicities", "cookie_value", "/", ".wikia.com"));
 			cookieJar.Add (c);
 			client.Headers.Add ("User-Agent", "Flightmare/chatbot");
-			client.Headers.Add ("Origin", "http://elderscrolls.wikia.com");
+			client.Headers.Add ("Origin", "https://elderscrolls.wikia.com");
 			client.Headers.Add ("Accept", "*/*");
-			client.Headers.Add ("Referer", "http://elderscrolls.wikia.com/wiki/Special:Chat");
+			client.Headers.Add ("Referer", "https://elderscrolls.wikia.com/wiki/Special:Chat");
 			client.Headers.Add ("Accept-Encoding", "gzip, deflate");
 			//ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 		}
@@ -60,6 +62,7 @@ namespace WikiaBot {
 				post.AppendFormat ("{0}{1}", "&", s);
 			}
 			using (client) {
+				ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
 				return client.DownloadString (post.ToString ());
 			}
 			//return null; //can WebClient.DownloadString() fail?
@@ -82,6 +85,7 @@ namespace WikiaBot {
 				post.AppendFormat ("{0}{1}", "&", s);
 			}
 			using (client) {
+				ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
 				return client.UploadString (post.ToString (), body);
 			}
 			//return null; //can WebClient.DownloadString() fail?
@@ -90,7 +94,8 @@ namespace WikiaBot {
 		public bool Login (string wiki, string user, string pass) {
 			using (client) {
 				Console.WriteLine ("Sending Login");
-				String response = Encoding.ASCII.GetString (client.UploadValues ("http://" + wiki + ".wikia.com/api.php?action=login&lgname=" + user + "&lgpassword=" + pass + "&format=json", new NameValueCollection () { }));
+				ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
+				String response = Encoding.ASCII.GetString (client.UploadValues ("https://" + wiki + ".wikia.com/api.php?action=login&lgname=" + user + "&lgpassword=" + pass + "&format=json", new NameValueCollection () { }));
 				Console.WriteLine (response);
 				var o = JObject.Parse (response);
 				string result = (string)o ["login"] ["result"];
@@ -104,7 +109,8 @@ namespace WikiaBot {
 				if (result.Equals ("NeedToken")) {
 					string token = (string)o ["login"] ["token"];
 					Console.WriteLine ("token: " + token);
-					response = Encoding.ASCII.GetString (client.UploadValues ("http://" + wiki + ".wikia.com/api.php?action=login&lgname=" + user + "&lgpassword=" + pass + "&format=json&lgtoken=" + token, new NameValueCollection () { }));
+					ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
+					response = Encoding.ASCII.GetString (client.UploadValues ("https://" + wiki + ".wikia.com/api.php?action=login&lgname=" + user + "&lgpassword=" + pass + "&format=json&lgtoken=" + token, new NameValueCollection () { }));
 				}
 				Console.WriteLine (response);
 				o = JObject.Parse (response);
@@ -118,6 +124,27 @@ namespace WikiaBot {
 				}
 			}
 			return false;
+		}
+
+		// Quick fix per http://stackoverflow.com/questions/4926676/mono-webrequest-fails-with-https TODO: refactor
+		public bool MyRemoteCertificateValidationCallback(System.Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) {
+			bool isOk = true;
+			// If there are errors in the certificate chain, look at each error to determine the cause.
+			if (sslPolicyErrors != SslPolicyErrors.None) {
+				for (int i=0; i<chain.ChainStatus.Length; i++) {
+					if (chain.ChainStatus [i].Status != X509ChainStatusFlags.RevocationStatusUnknown) {
+						chain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain;
+						chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
+						chain.ChainPolicy.UrlRetrievalTimeout = new TimeSpan (0, 1, 0);
+						chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllFlags;
+						bool chainIsValid = chain.Build ((X509Certificate2)certificate);
+						if (!chainIsValid) {
+							isOk = false;
+						}
+					}
+				}
+			}
+			return isOk;
 		}
 	}
 }

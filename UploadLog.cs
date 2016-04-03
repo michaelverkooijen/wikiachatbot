@@ -11,11 +11,11 @@ namespace WikiaBot {
 			this.wiki = wiki;
 			this.user = user;
 			this.pass = pass;
-			cm = new ConnectionManager ("http://" + wiki + ".wikia.com", "wikicities");
+			cm = new ConnectionManager ("https://" + wiki + ".wikia.com", "wikicities");
 		}
 
 		public string getEditToken() {
-			string response = cm.GetRequest ("http://" + wiki + ".wikia.com/api.php", new string[] {
+			string response = cm.GetRequest ("https://" + wiki + ".wikia.com/api.php", new string[] {
 				"action=query",
 				"prop=info",
 				"titles=User:"+user+"/chatlog/list",
@@ -51,7 +51,7 @@ namespace WikiaBot {
 			});*/
 
 			//update log list
-			cm.PostRequest ("http://" + wiki + ".wikia.com/api.php", new string[] {
+			cm.PostRequest ("https://" + wiki + ".wikia.com/api.php", new string[] {
 				"action=edit",
 				"title=User:"+user+"/chatlog/list",
 				"prependtext=*[[User:KINMUNE/chatlog/" + date + "|" + date + "]]\n",
@@ -64,7 +64,7 @@ namespace WikiaBot {
 
 			//upload the log
 			//TODO: converto to multipart/form-data
-			cm.PostRequest ("http://" + wiki + ".wikia.com/api.php", new string[] {
+			cm.PostRequest ("https://" + wiki + ".wikia.com/api.php", new string[] {
 				"action=edit",
 				"title=User:"+user+"/chatlog/" + date,
 				"text=" + page,

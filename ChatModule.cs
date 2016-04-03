@@ -31,7 +31,7 @@ namespace WikiaBot {
 			this.user = user;
 			this.pass = pass;
 			this.youtubeCredentials = youtubeCredentials;
-			cm = new ConnectionManager ("http://" + wiki + ".wikia.com", "wikicities");
+			cm = new ConnectionManager ("https://" + wiki + ".wikia.com", "wikicities");
 			namesBlacklist = new ArrayList ();
 			namesBlacklist.Add (user); //prevent bot from talking to itself
 			this.isMod = isMod;
@@ -41,7 +41,7 @@ namespace WikiaBot {
 		public bool getChatController () {
 			try {
 				//get wgchatkey
-				string response = cm.GetRequest ("http://" + wiki + ".wikia.com/wikia.php", new string[] {
+				string response = cm.GetRequest ("https://" + wiki + ".wikia.com/wikia.php", new string[] {
 					"controller=Chat",
 					"format=json"
 				});
@@ -62,7 +62,7 @@ namespace WikiaBot {
 		//Servers might take a few minutes to update the list.
 		public JObject getUserList() {
 			try {
-				string response = cm.GetRequest ("http://" + wiki + ".wikia.com/wikia.php", new string[] {
+				string response = cm.GetRequest ("https://" + wiki + ".wikia.com/wikia.php", new string[] {
 					"controller=ChatRail",
 					"method=GetUsers",
 					"format=json"
@@ -123,7 +123,7 @@ namespace WikiaBot {
 				return false;
 			}
 			//get wgchatkey
-			string response = cm.GetRequest ("http://" + wiki + ".wikia.com/wikia.php", new string[] {
+			string response = cm.GetRequest ("https://" + wiki + ".wikia.com/wikia.php", new string[] {
 				"controller=Chat",
 				"format=json"
 			});
@@ -142,7 +142,7 @@ namespace WikiaBot {
 			while (failCount < 5) {
 				try {
 					//Console.WriteLine ("Reading chat...");
-					lastResponse = cm.GetRequest ("http://" + nodeHost + "/socket.io/", new string[] {
+					lastResponse = cm.GetRequest ("https://" + nodeHost + "/socket.io/", new string[] {
 						"name=" + user,
 						"key=" + chatKey,
 						"roomId=" + roomId.ToString (),
@@ -265,7 +265,7 @@ namespace WikiaBot {
 							}
 							if (text.Equals ("/me hugs " + user)) {
 								Random r = new Random ();
-								switch (r.Next (4)) {
+								switch (r.Next (5)) {
 								case 0:
 									speak ("/me hugs " + name + " back");
 									break;
@@ -278,9 +278,15 @@ namespace WikiaBot {
 								case 3:
 									speak ("Eww, you are creeping me out " + name + "!");
 									break;
+								case 4:
+									speak ("I need a shower...");
+									break;
 								}
 							}
-							if (Regex.IsMatch (text, "https?://(www.)?(m.)?youtu.?be", RegexOptions.IgnoreCase)) { //text.Contains ("youtube")
+							if (text.Equals ("/me punches " + user)) {
+								speak ("D:");
+							}
+							if (Regex.IsMatch (text, "https?://(www.)?(m.)?youtu.?be", RegexOptions.IgnoreCase)) {
 								string[] words = text.Split (' ');
 								foreach (string word in words) {
 									string[] args = word.Split ('?');
@@ -292,7 +298,7 @@ namespace WikiaBot {
 												Console.WriteLine ("Found Video ID: " + videoId);
 												string videoTitle = YoutubeModule.GetVideoTitle (videoId, youtubeCredentials);
 												Console.WriteLine ("Video Title: " + videoTitle);
-												if (videoTitle != null && !containsBadLanguage (videoTitle)) {
+												if (videoTitle != null) {
 													speak (videoTitle);
 												}
 											}
@@ -308,8 +314,16 @@ namespace WikiaBot {
 								var data = JObject.Parse ((string)o ["data"]);
 								string name = (string)data ["attrs"] ["name"];
 								if (!namesBlacklist.Contains (name)) {
-									speak ("Hello there, " + name + "!");
 									namesBlacklist.Add (name);
+									if (name.Equals("~*LilithRayn*~")) {
+										speak ("/me hugs " + name);
+									} else {
+										if (name.Equals("Yatalu")) {
+											speak ("Yatta!");
+										} else {
+											speak ("Hello there, " + name + "!");
+										}
+									}
 								}
 							}
 						}
@@ -375,7 +389,7 @@ namespace WikiaBot {
 			//add length header to body:
 			body = body.Length.ToString () + ":" + body;
 			Console.WriteLine ("POST message: " + body);
-			cm.PostRequest ("http://" + nodeHost + "/socket.io/", new string[] {
+			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
 				"name=" + user,
 				"key=" + chatKey,
 				"roomId=" + roomId.ToString (),
@@ -389,7 +403,7 @@ namespace WikiaBot {
 
 		private void sendHeartbeat () {
 			string body = "1:2";
-			cm.PostRequest ("http://" + nodeHost + "/socket.io/", new string[] {
+			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
 				"name=" + user,
 				"key=" + chatKey,
 				"roomId=" + roomId.ToString (),

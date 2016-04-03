@@ -1,11 +1,11 @@
 ﻿<Properties StartupItem="WikiaBot.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="ChatModule.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="CookieClient.cs">
     <Files>
       <File FileName="Program.cs" Line="1" Column="1" />
       <File FileName="CookieClient.cs" Line="1" Column="1" />
-      <File FileName="ConnectionManager.cs" Line="1" Column="8" />
-      <File FileName="ChatModule.cs" Line="207" Column="16" />
+      <File FileName="ConnectionManager.cs" Line="1" Column="1" />
+      <File FileName="ChatModule.cs" Line="211" Column="13" />
       <File FileName="YoutubeModule.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
