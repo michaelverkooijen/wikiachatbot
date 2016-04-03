@@ -11,7 +11,7 @@ namespace WikiaBot {
 			this.wiki = wiki;
 			this.user = user;
 			this.pass = pass;
-			cm = new ConnectionManager ("https://" + wiki + ".wikia.com", "wikicities");
+			cm = new ConnectionManager ("https://" + wiki + ".wikia.com", "wikicities"); //FIXME: breaks session make singleton connectionmanager
 		}
 
 		public string getEditToken() {

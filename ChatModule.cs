@@ -78,39 +78,6 @@ namespace WikiaBot {
 			}
 		}
 
-		/*public JObject getUserList(){
-			try {
-				//get wgchatkey
-				string response = cm.GetRequest ("http://" + wiki + ".wikia.com/wikia.php", new string[] {
-					"controller=Chat",
-					"format=json"
-				});
-				var o = JObject.Parse (response);
-				// Extracts usernames from mw.config TODO: beautify
-				globalVariablesScript = (string)o ["globalVariablesScript"];
-				string target = "mw.config.set(";
-				int startIndex = globalVariablesScript.IndexOf(target)+target.Length;
-				int endIndex = globalVariablesScript.IndexOf(");");
-				//Console.WriteLine ("STARTINDEX: "+startIndex.ToString()+" ENDINDEX: "+endIndex.ToString()+" TOTALLENGTH: "+globalVariablesScript.Length.ToString());
-				mwconfig = globalVariablesScript.Substring(startIndex,endIndex-startIndex);
-				//fix \x26
-				mwconfig = mwconfig.Replace("\\x26","&");
-				mwconfig = mwconfig.Replace("\\x3c","<");
-				mwconfig = mwconfig.Replace("\\x3e",">");
-				//mwconfig = Regex.Replace(mwconfig, @"\\x26", "&");
-				mwconfig = WebUtility.UrlDecode(mwconfig);
-				//Console.WriteLine ("mw.config: "+mwconfig);
-				o = JObject.Parse(mwconfig);
-				foreach(var obj in o["wgWikiaChatUsers"]){
-					Console.WriteLine ("User in chat: " + (string)obj["username"]);
-				}
-				return o;
-			} catch (Exception e) {
-				Console.WriteLine (e.ToString());
-				return null;
-			}
-		}*/
-
 		//TODO: mid-session logins
 		public bool start () {
 			//logging in:
@@ -263,6 +230,15 @@ namespace WikiaBot {
 								doesWelcome = !doesWelcome;
 								speak ("Welcome users: " + doesWelcome.ToString ());
 							}
+							if (name.Equals ("Flightmare") && text.Equals ("KINMUNE, go away")) { 
+								sendStatusAway ();
+							}
+							if (name.Equals ("Flightmare") && text.Equals ("KINMUNE, please come back")) { 
+								sendStatusBack ();
+							}
+							if (name.Equals ("Flightmare") && text.Equals ("KINMUNE, please die")) { 
+								sendStatus("die");
+							}
 							if (text.Equals ("/me hugs " + user)) {
 								Random r = new Random ();
 								switch (r.Next (5)) {
@@ -386,6 +362,60 @@ namespace WikiaBot {
 		private void speak (string s) {
 			//TODO: is cid required?
 			string body = "42[\"message\",\"{\\\"id\\\":null,\\\"cid\\\":\\\"c328\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"chat\\\",\\\"roomId\\\":" + roomId.ToString () + ",\\\"name\\\":\\\"" + user + "\\\",\\\"text\\\":\\\"" + s + "\\\",\\\"avatarSrc\\\":\\\"\\\",\\\"timeStamp\\\":\\\"\\\",\\\"continued\\\":false,\\\"temp\\\":false}}\"]";
+			//add length header to body:
+			body = body.Length.ToString () + ":" + body;
+			Console.WriteLine ("POST message: " + body);
+			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
+				"name=" + user,
+				"key=" + chatKey,
+				"roomId=" + roomId.ToString (),
+				"serverId=" + nodeInstance.ToString (),
+				"EIO=3",
+				"transport=polling",
+				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+				"sid=" + sid
+			}, body);
+		}
+
+		private void sendStatus(string s) {
+			//156:42["message","{\"id\":null,\"cid\":\"c446\",\"attrs\":{\"msgType\":\"command\",\"command\":\"setstatus\",\"statusState\":\"away\",\"statusMessage\":\"\"}}"]
+			string body = "42[\"message\",\"{\\\"id\\\":null,\\\"cid\\\":\\\"c446\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"command\\\",\\\"command\\\":\\\"setstatus\\\",\\\"statusState\\\":\\\"dead\\\",\\\"statusMessage\\\":\\\"aargh\\\"}}\"]";
+			//add length header to body:
+			body = body.Length.ToString () + ":" + body;
+			Console.WriteLine ("POST message: " + body);
+			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
+				"name=" + user,
+				"key=" + chatKey,
+				"roomId=" + roomId.ToString (),
+				"serverId=" + nodeInstance.ToString (),
+				"EIO=3",
+				"transport=polling",
+				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+				"sid=" + sid
+			}, body);
+		}
+
+		private void sendStatusAway() {
+			//156:42["message","{\"id\":null,\"cid\":\"c446\",\"attrs\":{\"msgType\":\"command\",\"command\":\"setstatus\",\"statusState\":\"away\",\"statusMessage\":\"\"}}"]
+			string body = "42[\"message\",\"{\\\"id\\\":null,\\\"cid\\\":\\\"c446\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"command\\\",\\\"command\\\":\\\"setstatus\\\",\\\"statusState\\\":\\\"away\\\",\\\"statusMessage\\\":\\\"\\\"}}\"]";
+			//add length header to body:
+			body = body.Length.ToString () + ":" + body;
+			Console.WriteLine ("POST message: " + body);
+			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
+				"name=" + user,
+				"key=" + chatKey,
+				"roomId=" + roomId.ToString (),
+				"serverId=" + nodeInstance.ToString (),
+				"EIO=3",
+				"transport=polling",
+				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+				"sid=" + sid
+			}, body);
+		}
+
+		private void sendStatusBack() {
+			//156:42["message","{\"id\":null,\"cid\":\"c711\",\"attrs\":{\"msgType\":\"command\",\"command\":\"setstatus\",\"statusState\":\"here\",\"statusMessage\":\"\"}}"]
+			string body = "42[\"message\",\"{\\\"id\\\":null,\\\"cid\\\":\\\"c711\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"command\\\",\\\"command\\\":\\\"setstatus\\\",\\\"statusState\\\":\\\"here\\\",\\\"statusMessage\\\":\\\"\\\"}}\"]";
 			//add length header to body:
 			body = body.Length.ToString () + ":" + body;
 			Console.WriteLine ("POST message: " + body);
