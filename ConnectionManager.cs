@@ -8,12 +8,15 @@ using System.Net.Security;
 
 namespace WikiaBot {
 	//TODO: verify certificates
+	//TODO: perhaps it is better to migrate the youtube constructor
 	public class ConnectionManager {
 		CookieContainer cookieJar;
 		WebClient client; //CookieClient parent
 
+		private static ConnectionManager uniqueConnection;
+
 		/// <summary>
-		/// Initializes a new instance of the <see cref="WikiaBot.ConnectionManager"/> class.
+		/// Initializes a new (non unique) instance of the <see cref="WikiaBot.ConnectionManager"/> class.
 		/// To be used with all YouTube connections.
 		/// </summary>
 		public ConnectionManager() {
@@ -28,7 +31,7 @@ namespace WikiaBot {
 		/// </summary>
 		/// <param name="cookieDomain">Cookie domain.</param>
 		/// <param name="cookieName">Cookie name.</param>
-		public ConnectionManager (string cookieDomain, string cookieName) {
+		private ConnectionManager (string cookieDomain, string cookieName) {
 			client = new CookieClient ();
 			cookieJar = new CookieContainer ();
 			String domain = CookieClient.GetCookieDomain (cookieDomain);
@@ -44,6 +47,19 @@ namespace WikiaBot {
 			client.Headers.Add ("Referer", "https://elderscrolls.wikia.com/wiki/Special:Chat");
 			client.Headers.Add ("Accept-Encoding", "gzip, deflate");
 			//ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+		}
+
+		/// <summary>
+		/// Singleton getter for connection object. Makes sure there is only one active connection to Wikia
+		/// </summary>
+		/// <returns>The connection.</returns>
+		/// <param name="cookieDomain">Cookie domain.</param>
+		/// <param name="cookieName">Cookie name.</param>
+		public static ConnectionManager getConnection(string cookieDomain, string cookieName) {
+			if (uniqueConnection == null) {
+				uniqueConnection = new ConnectionManager (cookieDomain, cookieName);
+			}
+			return uniqueConnection;
 		}
 
 		/// <summary>

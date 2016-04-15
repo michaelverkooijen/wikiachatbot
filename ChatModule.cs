@@ -31,7 +31,8 @@ namespace WikiaBot {
 			this.user = user;
 			this.pass = pass;
 			this.youtubeCredentials = youtubeCredentials;
-			cm = new ConnectionManager ("https://" + wiki + ".wikia.com", "wikicities");
+			//cm = new ConnectionManager ("https://" + wiki + ".wikia.com", "wikicities");
+			cm = ConnectionManager.getConnection("https://" + wiki + ".wikia.com", "wikicities");
 			namesBlacklist = new ArrayList ();
 			namesBlacklist.Add (user); //prevent bot from talking to itself
 			this.isMod = isMod;
@@ -162,6 +163,7 @@ namespace WikiaBot {
 					if (nopCount > 0) {
 						Console.WriteLine ("I'm no longer in the user list, reconnecting...");
 						failCount = 100;
+						nopCount = 0;
 					}
 				}
 			}
