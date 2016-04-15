@@ -213,6 +213,10 @@ namespace WikiaBot {
 							} catch (Exception e) {
 								Console.WriteLine (e.ToString ());
 							}
+							//Burst text after logging
+							string date = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
+							burstUpload(date, line);
+
 							if (isMod && containsBadLanguage (text)) {
 								Random r = new Random ();
 								switch (r.Next (6)) {
@@ -326,6 +330,10 @@ namespace WikiaBot {
 							} catch (Exception e) {
 								Console.WriteLine (e.ToString ());
 							}
+							//Burst text after logging
+							string timestamp = (string)data ["attrs"] ["timeStamp"];
+							string dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
+							burstUpload(dt, line);
 						}
 						break;
 					case "ban":
@@ -348,6 +356,10 @@ namespace WikiaBot {
 							} catch (Exception e) {
 								Console.WriteLine (e.ToString ());
 							}
+							//Burst text after logging
+							string timestamp = (string)data ["attrs"] ["timeStamp"];
+							string dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
+							burstUpload(dt, line);
 						}
 						break;
 					}
@@ -454,6 +466,22 @@ namespace WikiaBot {
 				}
 			}
 			return false;
+		}
+
+		//TODO: implement 8k characters protection for s
+		private void burstUpload (string date, string s) {
+			s += "%0A";
+			if (s.Length + Global.burstBuffer.Length > 4000) {
+				try {
+					new UploadLog (wiki, user).upload (date, Global.burstBuffer);
+				} catch (Exception e) {
+					Console.WriteLine (e.ToString ());
+				}
+				Global.burstBuffer = s;
+			} else {
+				Global.burstBuffer += s;
+				Console.WriteLine ("Burst buffer: " + Global.burstBuffer.Length.ToString());
+			}
 		}
 	}
 }

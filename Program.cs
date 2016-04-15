@@ -43,17 +43,18 @@ namespace WikiaBot {
 			Console.WriteLine("Youtube API Key (optional): ");
 			youtubeCredentials = Console.ReadLine();*/
 
-			if (upload) {
-				new UploadLog ((string)login["wiki"], (string)login["username"], (string)login["password"]).upload ("20140731");
-			} else {
-				//ChatModule chat = new ChatModule(wiki, user, pass, youtubeCredentials, isMod, doesWelcome);
-				ChatModule chat = new ChatModule((string)login["wiki"], (string)login["username"], (string)login["password"], (string)login["youtubekey"], isMod, doesWelcome);
-				while(true){
-					//chat.start should block, if it doesn't something is wrong. ritual starts again from scratch
-					chat.start();
-					Thread.Sleep(60000); //wait a minute to make sure Wikia kills the session.
-				}
+			//ChatModule chat = new ChatModule(wiki, user, pass, youtubeCredentials, isMod, doesWelcome);
+			ChatModule chat = new ChatModule((string)login["wiki"], (string)login["username"], (string)login["password"], (string)login["youtubekey"], isMod, doesWelcome);
+			while(true){
+				//chat.start should block, if it doesn't something is wrong. ritual starts again from scratch
+				chat.start();
+				Thread.Sleep(60000); //wait a minute to make sure Wikia kills the session.
 			}
         }
     }
+
+	//Static string for reconnect persistence TODO: rewrite in something more OO
+	public static class Global {
+		public static string burstBuffer = "";
+	}
 }

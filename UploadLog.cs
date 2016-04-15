@@ -6,11 +6,10 @@ using System.IO;
 namespace WikiaBot {
 	public class UploadLog {
 		ConnectionManager cm;
-		private string wiki, user, pass;
-		public UploadLog (string wiki, string user, string pass) {
+		private string wiki, user;
+		public UploadLog (string wiki, string user) {
 			this.wiki = wiki;
 			this.user = user;
-			this.pass = pass;
 			//cm = new ConnectionManager ("https://" + wiki + ".wikia.com", "wikicities"); //FIXME: breaks session make singleton connectionmanager
 			cm = ConnectionManager.getConnection("https://" + wiki + ".wikia.com", "wikicities");
 		}
@@ -19,7 +18,7 @@ namespace WikiaBot {
 			string response = cm.GetRequest ("https://" + wiki + ".wikia.com/api.php", new string[] {
 				"action=query",
 				"prop=info",
-				"titles=User:"+user+"/chatlog/list",
+				"titles=User:"+user,
 				"intoken=edit",
 				"format=json"
 			});
@@ -28,9 +27,10 @@ namespace WikiaBot {
 			return (string)o["query"]["pages"]["866883"]["edittoken"];
 		}
 
-		public bool upload(string date) {
+		public bool upload(string date, string buffer) {
 			Console.WriteLine ("Entering upload module");
-			//logging in:
+			//Should not need to log in for this, TODO: validate
+			/*
 			try {
 				if (!cm.Login (wiki, user, pass)) {
 					return false;
@@ -39,6 +39,7 @@ namespace WikiaBot {
 				Console.WriteLine (e.ToString ());
 				return false;
 			}
+			*/
 
 			Console.WriteLine ("Requesting token");
 			string token = getEditToken ();
@@ -51,7 +52,8 @@ namespace WikiaBot {
 				"action=raw"
 			});*/
 
-			//update log list
+			//update log list TODO: re-enable
+			/*
 			cm.PostRequest ("https://" + wiki + ".wikia.com/api.php", new string[] {
 				"action=edit",
 				"title=User:"+user+"/chatlog/list",
@@ -60,20 +62,22 @@ namespace WikiaBot {
 				"bot=1",
 				"token=" + token
 			}, "Hi");
+			*/
 
-			string page = "{{../}}\n" + File.ReadAllText(@""+date+".log");
+			//string page = "{{../}}\n" + File.ReadAllText(@""+date+".log");
 
 			//upload the log
 			//TODO: converto to multipart/form-data
-			cm.PostRequest ("https://" + wiki + ".wikia.com/api.php", new string[] {
+			string res;
+			res = cm.PostRequest ("https://" + wiki + ".wikia.com/api.php", new string[] {
 				"action=edit",
 				"title=User:"+user+"/chatlog/" + date,
-				"text=" + page,
-				"summary=Adding log",
+				"appendtext=" + buffer,
+				"summary=Adding%20log",
 				"bot=1",
 				"token=" + token
-			}, "Hi");
-
+			}, "");
+			Console.WriteLine (res);
 			return true;
 		}
 	}
