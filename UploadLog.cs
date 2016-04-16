@@ -24,7 +24,7 @@ namespace WikiaBot {
 			});
 			Console.WriteLine (response);
 			var o = JObject.Parse (response);
-			return (string)o["query"]["pages"]["866883"]["edittoken"];
+			return (string)o["query"]["pages"]["556436"]["edittoken"];//FIXME: string selector to index
 		}
 
 		public bool upload(string date, string buffer) {
