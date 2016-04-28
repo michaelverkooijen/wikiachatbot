@@ -21,7 +21,7 @@ namespace WikiaBot {
 			"wh[o0]re",
 			"c[o0]ck"
 		};
-		private int roomId, nodeInstance, nopCount;
+		private int roomId, nopCount;
 		ConnectionManager cm;
 		ArrayList namesBlacklist;
 		private Boolean isMod, doesWelcome;
@@ -49,8 +49,8 @@ namespace WikiaBot {
 				var o = JObject.Parse (response);
 				chatKey = (string)o ["chatkey"];
 				roomId = (int)o ["roomId"];
-				nodeHost = (string)o ["nodeHostname"];
-				nodeInstance = (int)o ["nodeInstance"];
+				nodeHost = (string)o ["chatServerHost"];
+				//nodeInstance = (int)o ["nodeInstance"];
 				Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
 				Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
 				return true;
@@ -110,12 +110,11 @@ namespace WikiaBot {
 			//make fallback escape from loop
 			while (failCount < 5) {
 				try {
-					Console.WriteLine ("Reading chat...");
 					lastResponse = cm.GetRequest ("https://" + nodeHost + "/socket.io/", new string[] {
 						"name=" + user,
 						"key=" + chatKey,
-						"roomId=2",// + roomId.ToString (),
-						"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
+						"roomId=" + roomId.ToString (),
+						"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString () //TODO: acquire wgCityId
 						"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 						"EIO=3",
 						"transport=polling",
@@ -135,7 +134,6 @@ namespace WikiaBot {
 						parseResponse (line);
 					}
 					Thread.Sleep (1000);
-					//Console.WriteLine ("Sending heartbeat");
 					sendHeartbeat ();
 				} catch (Exception e) {
 					lastResponse = "";
@@ -187,22 +185,16 @@ namespace WikiaBot {
 				var token = JToken.Parse (s);
 				if (token is JArray) {
 					nopCount = 0; //valid sign of life, resetting watchdog
-					//Console.WriteLine ("JArray detected!");
 					s = (string)token.Last.ToString ();
 					var o = JObject.Parse (s);
 					string eve = (string)o ["event"];
-					//Console.WriteLine (eve);
 					switch (eve) {
 					case "chat:add":
 						{
 							var data = JObject.Parse ((string)o ["data"]);
 							string name = (string)data ["attrs"] ["name"];
-							//Console.WriteLine("Name: " + name);
 							string text = (string)data ["attrs"] ["text"];
-							//Console.WriteLine("Text: " + text);
 							string timestamp = (string)data ["attrs"] ["timeStamp"];
-							//Console.WriteLine(timestamp);
-							//var dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToLocalTime ();
 							var dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd HH:mm:ss");
 							string line = "*" + dt.Split (' ') [1] + ": [[User:" + name + "|]]: <nowiki>" + text + "</nowiki>";
 							Console.WriteLine (line);
@@ -249,7 +241,7 @@ namespace WikiaBot {
 							}
 							if (text.Equals ("/me hugs " + user)) {
 								Random r = new Random ();
-								switch (r.Next (5)) {
+								switch (r.Next (8)) {
 								case 0:
 									speak ("/me hugs " + name + " back");
 									break;
@@ -265,10 +257,36 @@ namespace WikiaBot {
 								case 4:
 									speak ("I need a shower...");
 									break;
+								case 5:
+									speak ("Zii-los Dii Du!");
+									break;
+								case 6:
+									speak ("You always know how to cheer me up!");
+									break;
+								case 7:
+									speak ("Yay, free hugs :D");
+									break;
 								}
 							}
 							if (text.Equals ("/me punches " + user)) {
-								speak ("D:");
+								Random r = new Random ();
+								switch (r.Next (5)) {
+								case 0:
+									speak ("Yol Toor Shul!"); //Breathe fire
+									break;
+								case 1:
+									speak ("Kaan Drem Ov!"); //Make peace
+									break;
+								case 2:
+									speak ("Krii Lun Aus!");//you're dead!
+									break;
+								case 3:
+									speak ("Zun Haal Viik!");
+									break;
+								case 4:
+									speak ("Gol Hah Dov!");
+									break;
+								}
 							}
 							if (Regex.IsMatch (text, "https?://(www.)?(m.)?youtu.?be", RegexOptions.IgnoreCase)) {
 								string[] words = text.Split (' ');
@@ -299,15 +317,7 @@ namespace WikiaBot {
 								string name = (string)data ["attrs"] ["name"];
 								if (!namesBlacklist.Contains (name)) {
 									namesBlacklist.Add (name);
-									if (name.Equals("~*LilithRayn*~")) {
-										speak ("/me hugs " + name);
-									} else {
-										if (name.Equals("Yatalu")) {
-											speak ("Yatta!");
-										} else {
-											speak ("Hello there, " + name + "!");
-										}
-									}
+									speak ("Hello there, " + name + "!");
 								}
 							}
 						}
@@ -389,7 +399,7 @@ namespace WikiaBot {
 				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 				"EIO=3",
 				"transport=polling",
-				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+				//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
 				"sid=" + sid
 			}, body);
 		}
@@ -408,7 +418,7 @@ namespace WikiaBot {
 				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 				"EIO=3",
 				"transport=polling",
-				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+				//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
 				"sid=" + sid
 			}, body);
 		}
@@ -427,7 +437,7 @@ namespace WikiaBot {
 				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 				"EIO=3",
 				"transport=polling",
-				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+				//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
 				"sid=" + sid
 			}, body);
 		}
@@ -446,7 +456,7 @@ namespace WikiaBot {
 				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 				"EIO=3",
 				"transport=polling",
-				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+				//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
 				"sid=" + sid
 			}, body);
 		}
@@ -461,7 +471,7 @@ namespace WikiaBot {
 				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 				"EIO=3",
 				"transport=polling",
-				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+				//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
 				"sid=" + sid
 			}, body);
 		}
