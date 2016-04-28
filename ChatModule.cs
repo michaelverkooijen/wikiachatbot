@@ -21,6 +21,17 @@ namespace WikiaBot {
 			"wh[o0]re",
 			"c[o0]ck"
 		};
+		private string[] parameters = {
+			"name=",
+			"key=",
+			"roomId=",
+			"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString () //TODO: acquire wgCityId
+			"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
+			"EIO=3",
+			"transport=polling",
+			//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+			"sid="
+		};
 		private int roomId, nopCount;
 		ConnectionManager cm;
 		ArrayList namesBlacklist;
@@ -52,7 +63,6 @@ namespace WikiaBot {
 				nodeHost = (string)o ["chatServerHost"];
 				//nodeInstance = (int)o ["nodeInstance"];
 				Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
-				Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
 				return true;
 			} catch (Exception e) {
 				Console.WriteLine (e.ToString());
@@ -102,25 +112,19 @@ namespace WikiaBot {
 			nodeHost = (string)o ["chatServerHost"]; //pre 20160427 chat update: nodeHostname
 			//nodeInstance = (int)o ["nodeInstance"];
 			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
-			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
+			parameters [0] += user;
+			parameters [1] += chatKey;
+			parameters [2] += roomId.ToString ();
+			//TODO:3 & 4
 			int failCount = 0;
-			sid = null;
+			sid = null;//TODO: remove
+			parameters [7] = "sid=";
 			string lastResponse = "";
 			//enter poll loop:
 			//make fallback escape from loop
 			while (failCount < 5) {
 				try {
-					lastResponse = cm.GetRequest ("https://" + nodeHost + "/socket.io/", new string[] {
-						"name=" + user,
-						"key=" + chatKey,
-						"roomId=" + roomId.ToString (),
-						"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString () //TODO: acquire wgCityId
-						"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
-						"EIO=3",
-						"transport=polling",
-						//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
-						"sid=" + sid
-					}); //read chat
+					lastResponse = cm.GetRequest ("https://" + nodeHost + "/socket.io/", parameters); //read chat
 					lastResponse = Regex.Replace (lastResponse, @"[\u0000-\u0007]", string.Empty); //removes ETX, EOT sent by server
 					//Console.WriteLine (lastResponse);
 					//�433�
@@ -139,6 +143,7 @@ namespace WikiaBot {
 					lastResponse = "";
 					failCount++;
 					sid = null;
+					parameters [7] = "sid=";
 					Console.WriteLine ("FAILED reading chat: " + e.ToString ());
 					try {
 						using (StreamWriter file = File.AppendText (@"exceptions.log")) {
@@ -379,6 +384,7 @@ namespace WikiaBot {
 					Console.WriteLine ("No JArray here");
 					var o = JObject.Parse (s);
 					sid = (string)o ["sid"];
+					parameters [7] = "sid=" + sid;
 					Console.WriteLine ("new sid: " + sid);
 				}
 			}
@@ -391,17 +397,7 @@ namespace WikiaBot {
 			//add length header to body:
 			body = body.Length.ToString () + ":" + body;
 			Console.WriteLine ("POST message: " + body);
-			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
-				"name=" + user,
-				"key=" + chatKey,
-				"roomId=2",// + roomId.ToString (),
-				"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
-				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
-				"EIO=3",
-				"transport=polling",
-				//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
-				"sid=" + sid
-			}, body);
+			cm.PostRequest ("https://" + nodeHost + "/socket.io/", parameters, body);
 		}
 
 		private void sendStatus(string s) {
@@ -410,17 +406,7 @@ namespace WikiaBot {
 			//add length header to body:
 			body = body.Length.ToString () + ":" + body;
 			Console.WriteLine ("POST message: " + body);
-			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
-				"name=" + user,
-				"key=" + chatKey,
-				"roomId=2",// + roomId.ToString (),
-				"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
-				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
-				"EIO=3",
-				"transport=polling",
-				//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
-				"sid=" + sid
-			}, body);
+			cm.PostRequest ("https://" + nodeHost + "/socket.io/", parameters, body);
 		}
 
 		private void sendStatusAway() {
@@ -429,17 +415,7 @@ namespace WikiaBot {
 			//add length header to body:
 			body = body.Length.ToString () + ":" + body;
 			Console.WriteLine ("POST message: " + body);
-			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
-				"name=" + user,
-				"key=" + chatKey,
-				"roomId=2",// + roomId.ToString (),
-				"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
-				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
-				"EIO=3",
-				"transport=polling",
-				//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
-				"sid=" + sid
-			}, body);
+			cm.PostRequest ("https://" + nodeHost + "/socket.io/", parameters, body);
 		}
 
 		private void sendStatusBack() {
@@ -448,32 +424,12 @@ namespace WikiaBot {
 			//add length header to body:
 			body = body.Length.ToString () + ":" + body;
 			Console.WriteLine ("POST message: " + body);
-			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
-				"name=" + user,
-				"key=" + chatKey,
-				"roomId=2",// + roomId.ToString (),
-				"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
-				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
-				"EIO=3",
-				"transport=polling",
-				//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
-				"sid=" + sid
-			}, body);
+			cm.PostRequest ("https://" + nodeHost + "/socket.io/", parameters, body);
 		}
 
 		private void sendHeartbeat () {
 			string body = "1:2";
-			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
-				"name=" + user,
-				"key=" + chatKey,
-				"roomId=2",// + roomId.ToString (),
-				"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
-				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
-				"EIO=3",
-				"transport=polling",
-				//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
-				"sid=" + sid
-			}, body);
+			cm.PostRequest ("https://" + nodeHost + "/socket.io/", parameters, body);
 		}
 
 		private Boolean containsBadLanguage (string s) {
