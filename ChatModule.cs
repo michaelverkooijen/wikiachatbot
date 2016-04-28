@@ -91,6 +91,7 @@ namespace WikiaBot {
 				return false;
 			}
 			//get wgchatkey
+			Console.WriteLine ("Getting Chat controller");
 			string response = cm.GetRequest ("https://" + wiki + ".wikia.com/wikia.php", new string[] {
 				"controller=Chat",
 				"format=json"
@@ -98,8 +99,8 @@ namespace WikiaBot {
 			var o = JObject.Parse (response);
 			chatKey = (string)o ["chatkey"];
 			roomId = (int)o ["roomId"];
-			nodeHost = (string)o ["nodeHostname"];
-			nodeInstance = (int)o ["nodeInstance"];
+			nodeHost = (string)o ["chatServerHost"]; //pre 20160427 chat update: nodeHostname
+			//nodeInstance = (int)o ["nodeInstance"];
 			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
 			Console.WriteLine ("t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ());
 			int failCount = 0;
@@ -109,15 +110,16 @@ namespace WikiaBot {
 			//make fallback escape from loop
 			while (failCount < 5) {
 				try {
-					//Console.WriteLine ("Reading chat...");
+					Console.WriteLine ("Reading chat...");
 					lastResponse = cm.GetRequest ("https://" + nodeHost + "/socket.io/", new string[] {
 						"name=" + user,
 						"key=" + chatKey,
-						"roomId=" + roomId.ToString (),
-						"serverId=" + nodeInstance.ToString (),
+						"roomId=2",// + roomId.ToString (),
+						"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
+						"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 						"EIO=3",
 						"transport=polling",
-						"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
+						//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
 						"sid=" + sid
 					}); //read chat
 					lastResponse = Regex.Replace (lastResponse, @"[\u0000-\u0007]", string.Empty); //removes ETX, EOT sent by server
@@ -375,15 +377,16 @@ namespace WikiaBot {
 
 		private void speak (string s) {
 			//TODO: is cid required?
-			string body = "42[\"message\",\"{\\\"id\\\":null,\\\"cid\\\":\\\"c328\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"chat\\\",\\\"roomId\\\":" + roomId.ToString () + ",\\\"name\\\":\\\"" + user + "\\\",\\\"text\\\":\\\"" + s + "\\\",\\\"avatarSrc\\\":\\\"\\\",\\\"timeStamp\\\":\\\"\\\",\\\"continued\\\":false,\\\"temp\\\":false}}\"]";
+			string body = "42[\"message\",\"{\\\"id\\\":null,\\\"cid\\\":\\\"c2512\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"chat\\\",\\\"roomId\\\":" + roomId.ToString () + ",\\\"name\\\":\\\"" + user + "\\\",\\\"text\\\":\\\"" + s + "\\\",\\\"avatarSrc\\\":\\\"\\\",\\\"timeStamp\\\":\\\"\\\",\\\"continued\\\":false,\\\"temp\\\":false}}\"]";
 			//add length header to body:
 			body = body.Length.ToString () + ":" + body;
 			Console.WriteLine ("POST message: " + body);
 			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
 				"name=" + user,
 				"key=" + chatKey,
-				"roomId=" + roomId.ToString (),
-				"serverId=" + nodeInstance.ToString (),
+				"roomId=2",// + roomId.ToString (),
+				"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
+				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 				"EIO=3",
 				"transport=polling",
 				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
@@ -400,8 +403,9 @@ namespace WikiaBot {
 			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
 				"name=" + user,
 				"key=" + chatKey,
-				"roomId=" + roomId.ToString (),
-				"serverId=" + nodeInstance.ToString (),
+				"roomId=2",// + roomId.ToString (),
+				"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
+				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 				"EIO=3",
 				"transport=polling",
 				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
@@ -418,8 +422,9 @@ namespace WikiaBot {
 			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
 				"name=" + user,
 				"key=" + chatKey,
-				"roomId=" + roomId.ToString (),
-				"serverId=" + nodeInstance.ToString (),
+				"roomId=2",// + roomId.ToString (),
+				"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
+				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 				"EIO=3",
 				"transport=polling",
 				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
@@ -436,8 +441,9 @@ namespace WikiaBot {
 			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
 				"name=" + user,
 				"key=" + chatKey,
-				"roomId=" + roomId.ToString (),
-				"serverId=" + nodeInstance.ToString (),
+				"roomId=2",// + roomId.ToString (),
+				"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
+				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 				"EIO=3",
 				"transport=polling",
 				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
@@ -450,8 +456,9 @@ namespace WikiaBot {
 			cm.PostRequest ("https://" + nodeHost + "/socket.io/", new string[] {
 				"name=" + user,
 				"key=" + chatKey,
-				"roomId=" + roomId.ToString (),
-				"serverId=" + nodeInstance.ToString (),
+				"roomId=2",// + roomId.ToString (),
+				"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString ()
+				"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 				"EIO=3",
 				"transport=polling",
 				"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
@@ -470,7 +477,7 @@ namespace WikiaBot {
 
 		//TODO: implement 8k characters protection for s
 		private void burstUpload (string date, string s) {
-			s += "%0A";
+			s = "%0A" + s;
 			if (s.Length + Global.burstBuffer.Length > 4000) {
 				try {
 					new UploadLog (wiki, user).upload (date, Global.burstBuffer);
