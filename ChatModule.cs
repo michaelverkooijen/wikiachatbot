@@ -43,7 +43,7 @@ namespace WikiaBot {
 			this.pass = pass;
 			this.youtubeCredentials = youtubeCredentials;
 			//cm = new ConnectionManager ("https://" + wiki + ".wikia.com", "wikicities");
-			cm = ConnectionManager.getConnection("https://" + wiki + ".wikia.com", "wikicities");
+			cm = ConnectionManager.getConnection ("https://" + wiki + ".wikia.com", "wikicities");
 			namesBlacklist = new ArrayList ();
 			namesBlacklist.Add (user); //prevent bot from talking to itself
 			this.isMod = isMod;
@@ -65,26 +65,26 @@ namespace WikiaBot {
 				Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
 				return true;
 			} catch (Exception e) {
-				Console.WriteLine (e.ToString());
+				Console.WriteLine (e.ToString ());
 				return false;
 			}
 		}
 
 		//Servers might take a few minutes to update the list.
-		public JObject getUserList() {
+		public JObject getUserList () {
 			try {
 				string response = cm.GetRequest ("https://" + wiki + ".wikia.com/wikia.php", new string[] {
 					"controller=ChatRail",
 					"method=GetUsers",
 					"format=json"
 				});
-				var o = JObject.Parse(response);
-				foreach(var obj in o["users"]){
-					Console.WriteLine ("User in chat: " + (string)obj["username"]);
+				var o = JObject.Parse (response);
+				foreach (var obj in o["users"]) {
+					Console.WriteLine ("User in chat: " + (string)obj ["username"]);
 				}
 				return o;
 			} catch (Exception e) {
-				Console.WriteLine (e.ToString());
+				Console.WriteLine (e.ToString ());
 				return null;
 			}
 		}
@@ -128,7 +128,7 @@ namespace WikiaBot {
 					lastResponse = Regex.Replace (lastResponse, @"[\u0000-\u0007]", string.Empty); //removes ETX, EOT sent by server
 					//Console.WriteLine (lastResponse);
 					//�433�
-					lastResponse = lastResponse.Replace('\u00ff', '\ufffd'); //Windows workaround
+					lastResponse = lastResponse.Replace ('\u00ff', '\ufffd'); //Windows workaround
 					string[] lines = lastResponse.Split ('\ufffd');
 					foreach (string line in lines) {
 						//Test for unexpected authentication failures
@@ -147,20 +147,20 @@ namespace WikiaBot {
 					Console.WriteLine ("FAILED reading chat: " + e.ToString ());
 					try {
 						using (StreamWriter file = File.AppendText (@"exceptions.log")) {
-							file.WriteLine ((DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ("yyyyMMdd HH:mm:ss") + ": " + e.ToString());
+							file.WriteLine ((DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds.ToString ("yyyyMMdd HH:mm:ss") + ": " + e.ToString ());
 						}
 					} catch (Exception ex) {
-						Console.WriteLine (ex.ToString());
+						Console.WriteLine (ex.ToString ());
 					}
 				}
 				failCount = 0; //cycle is success, reset fail counter
 				Thread.Sleep (1000);
-				Console.WriteLine (nopCount.ToString());
+				Console.WriteLine (nopCount.ToString ());
 				if (nopCount > 300) { //circa 10 minutes of no activity
 					Console.WriteLine ("Getting user list");
-					var userList = getUserList();
-					foreach(var obj in userList["users"]){
-						if (((string)obj["username"]).Equals(user)) {
+					var userList = getUserList ();
+					foreach (var obj in userList["users"]) {
+						if (((string)obj ["username"]).Equals (user)) {
 							Console.WriteLine ("I'm still in the chat.");
 							nopCount = 0;
 						}
@@ -178,7 +178,7 @@ namespace WikiaBot {
 		//TODO: validate trimming
 		private bool parseResponse (string s) {
 			s = s.TrimEnd ('\r', '\n', ' ');//]?
-			if (s.Equals("3")) {
+			if (s.Equals ("3")) {
 				nopCount++; //nothing happened, watchdog++
 			}
 			int prefix = s.IndexOf ("\"");
@@ -214,7 +214,7 @@ namespace WikiaBot {
 							}
 							//Burst text after logging
 							string date = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
-							burstUpload(date, line);
+							burstUpload (date, line);
 
 							if (isMod && containsBadLanguage (text)) {
 								Random r = new Random ();
@@ -242,7 +242,7 @@ namespace WikiaBot {
 								sendStatusBack ();
 							}
 							if (name.Equals ("Flightmare") && text.Equals ("KINMUNE, please die")) { 
-								sendStatus("die");
+								sendStatus ("die");
 							}
 							if (text.Equals ("/me hugs " + user)) {
 								Random r = new Random ();
@@ -333,8 +333,6 @@ namespace WikiaBot {
 							var data = JObject.Parse ((string)o ["data"]);
 							string kickedName = (string)data ["attrs"] ["kickedUserName"];
 							string modName = (string)data ["attrs"] ["moderatorName"];
-							//string reason = (string)data ["attrs"] ["reason"];
-							//TODO: test for correct timezone settings (should be UTC)
 							string filename = DateTime.Now.ToUniversalTime ().ToString ("yyyyMMdd") + ".log";
 							string line = "**[[User:" + modName + "|]] kicked [[User:" + kickedName + "|]]";
 							Console.WriteLine (line);
@@ -350,7 +348,7 @@ namespace WikiaBot {
 							//Burst text after logging
 							string timestamp = (string)data ["attrs"] ["timeStamp"];
 							string dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
-							burstUpload(dt, line);
+							burstUpload (dt, line);
 						}
 						break;
 					case "ban":
@@ -359,8 +357,6 @@ namespace WikiaBot {
 							string kickedName = (string)data ["attrs"] ["kickedUserName"];
 							string modName = (string)data ["attrs"] ["moderatorName"];
 							string reason = (string)data ["attrs"] ["reason"];
-							//int time = (int)data ["attrs"] ["time"];
-							//TODO: test for correct timezone settings (should be UTC)
 							string filename = DateTime.Now.ToUniversalTime ().ToString ("yyyyMMdd") + ".log";
 							string line = "**[[User:" + modName + "|]] banned [[User:" + kickedName + "|]] with reason: " + reason;
 							Console.WriteLine (line);
@@ -376,7 +372,7 @@ namespace WikiaBot {
 							//Burst text after logging
 							string timestamp = (string)data ["attrs"] ["timeStamp"];
 							string dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
-							burstUpload(dt, line);
+							burstUpload (dt, line);
 						}
 						break;
 					}
@@ -400,7 +396,7 @@ namespace WikiaBot {
 			cm.PostRequest ("https://" + nodeHost + "/socket.io/", parameters, body);
 		}
 
-		private void sendStatus(string s) {
+		private void sendStatus (string s) {
 			//156:42["message","{\"id\":null,\"cid\":\"c446\",\"attrs\":{\"msgType\":\"command\",\"command\":\"setstatus\",\"statusState\":\"away\",\"statusMessage\":\"\"}}"]
 			string body = "42[\"message\",\"{\\\"id\\\":null,\\\"cid\\\":\\\"c446\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"command\\\",\\\"command\\\":\\\"setstatus\\\",\\\"statusState\\\":\\\"dead\\\",\\\"statusMessage\\\":\\\"aargh\\\"}}\"]";
 			//add length header to body:
@@ -409,7 +405,7 @@ namespace WikiaBot {
 			cm.PostRequest ("https://" + nodeHost + "/socket.io/", parameters, body);
 		}
 
-		private void sendStatusAway() {
+		private void sendStatusAway () {
 			//156:42["message","{\"id\":null,\"cid\":\"c446\",\"attrs\":{\"msgType\":\"command\",\"command\":\"setstatus\",\"statusState\":\"away\",\"statusMessage\":\"\"}}"]
 			string body = "42[\"message\",\"{\\\"id\\\":null,\\\"cid\\\":\\\"c446\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"command\\\",\\\"command\\\":\\\"setstatus\\\",\\\"statusState\\\":\\\"away\\\",\\\"statusMessage\\\":\\\"\\\"}}\"]";
 			//add length header to body:
@@ -418,7 +414,7 @@ namespace WikiaBot {
 			cm.PostRequest ("https://" + nodeHost + "/socket.io/", parameters, body);
 		}
 
-		private void sendStatusBack() {
+		private void sendStatusBack () {
 			//156:42["message","{\"id\":null,\"cid\":\"c711\",\"attrs\":{\"msgType\":\"command\",\"command\":\"setstatus\",\"statusState\":\"here\",\"statusMessage\":\"\"}}"]
 			string body = "42[\"message\",\"{\\\"id\\\":null,\\\"cid\\\":\\\"c711\\\",\\\"attrs\\\":{\\\"msgType\\\":\\\"command\\\",\\\"command\\\":\\\"setstatus\\\",\\\"statusState\\\":\\\"here\\\",\\\"statusMessage\\\":\\\"\\\"}}\"]";
 			//add length header to body:
@@ -453,7 +449,7 @@ namespace WikiaBot {
 				Global.burstBuffer = s;
 			} else {
 				Global.burstBuffer += s;
-				Console.WriteLine ("Burst buffer: " + Global.burstBuffer.Length.ToString());
+				Console.WriteLine ("Burst buffer: " + Global.burstBuffer.Length.ToString ());
 			}
 		}
 	}
