@@ -34,16 +34,7 @@ namespace WikiaBot {
 			if (upload) {
 				Console.WriteLine ("Upload flag detected");
 			}
-            /*Console.WriteLine("Wikia subdomain: ");
-            wiki = Console.ReadLine();
-            Console.WriteLine("Username: ");
-            user = Console.ReadLine();
-            Console.WriteLine("Password: ");
-            pass = Console.ReadLine();
-			Console.WriteLine("Youtube API Key (optional): ");
-			youtubeCredentials = Console.ReadLine();*/
-
-			//ChatModule chat = new ChatModule(wiki, user, pass, youtubeCredentials, isMod, doesWelcome);
+				
 			ChatModule chat = new ChatModule((string)login["wiki"], (string)login["username"], (string)login["password"], (string)login["youtubekey"], isMod, doesWelcome);
 			while(true){
 				//chat.start should block, if it doesn't something is wrong. ritual starts again from scratch

@@ -25,8 +25,8 @@ namespace WikiaBot {
 			"name=",
 			"key=",
 			"roomId=",
-			"serverId=1706",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString () //TODO: acquire wgCityId
-			"wikiId=1706",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
+			"serverId=",// + nodeInstance.ToString (), //pre 20160427 chat update: "serverId=" + nodeInstance.ToString () //TODO: acquire wgCityId
+			"wikiId=",// + nodeInstance.ToString(), //pre 20160427 chat update: did not exist
 			"EIO=3",
 			"transport=polling",
 			//"t=" + (DateTime.Now.ToUniversalTime () - new DateTime (1970, 1, 1)).TotalSeconds,
@@ -70,6 +70,22 @@ namespace WikiaBot {
 			}
 		}
 
+		public string getWikiId () {
+			try {
+				string response = cm.GetRequest ("https://" + wiki + ".wikia.com/api.php", new string[] {
+					"action=query",
+					"meta=siteinfo",
+					"siprop=wikidesc",
+					"format=json"
+				});
+				var o = JObject.Parse (response);
+				return (string)o ["query"] ["wikidesc"] ["id"];
+			} catch (Exception e) {
+				Console.WriteLine ("Something went wrong getting wgCityId:" + e.ToString ());
+				return null;
+			}
+		}
+
 		//Servers might take a few minutes to update the list.
 		public JObject getUserList () {
 			try {
@@ -79,12 +95,9 @@ namespace WikiaBot {
 					"format=json"
 				});
 				var o = JObject.Parse (response);
-				foreach (var obj in o["users"]) {
-					Console.WriteLine ("User in chat: " + (string)obj ["username"]);
-				}
 				return o;
 			} catch (Exception e) {
-				Console.WriteLine (e.ToString ());
+				Console.WriteLine ("Something went wrong getting userlist:" + e.ToString ());
 				return null;
 			}
 		}
@@ -112,10 +125,12 @@ namespace WikiaBot {
 			nodeHost = (string)o ["chatServerHost"]; //pre 20160427 chat update: nodeHostname
 			//nodeInstance = (int)o ["nodeInstance"];
 			Console.WriteLine ("chatKey: " + chatKey + " room: " + nodeHost + " roomId: " + roomId.ToString ());
+			string wgCityId = getWikiId ();
 			parameters [0] += user;
 			parameters [1] += chatKey;
 			parameters [2] += roomId.ToString ();
-			//TODO:3 & 4
+			parameters [3] += wgCityId;
+			parameters [4] += wgCityId;
 			int failCount = 0;
 			sid = null;//TODO: remove
 			parameters [7] = "sid=";
