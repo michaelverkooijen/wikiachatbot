@@ -458,10 +458,13 @@ namespace WikiaBot {
 			if (s.Length + Global.burstBuffer.Length > 4000) {
 				try {
 					new UploadLog (wiki, user).upload (date, Global.burstBuffer);
+					Global.burstBuffer = s;//resets only after success
 				} catch (Exception e) {
 					Console.WriteLine (e.ToString ());
+					if (s.Length + Global.burstBuffer.Length > 7000) {
+						Global.burstBuffer = s; //give up
+					}
 				}
-				Global.burstBuffer = s;
 			} else {
 				Global.burstBuffer += s;
 				Console.WriteLine ("Burst buffer: " + Global.burstBuffer.Length.ToString ());
