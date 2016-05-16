@@ -478,7 +478,7 @@ namespace WikiaBot {
 
 		//TODO: implement 8k characters protection for s
 		private void burstUpload (string date, string s) {
-			s = "%0A" + s;
+			s = "\n" + s;
 			if (s.Length + Global.burstBuffer.Length > 4000) {
 				try {
 					new UploadLog (wiki, user).upload (date, Global.burstBuffer);
