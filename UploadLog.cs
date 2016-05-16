@@ -29,40 +29,13 @@ namespace WikiaBot {
 
 		public bool upload(string date, string buffer) {
 			Console.WriteLine ("Entering upload module");
-			//Should not need to log in for this, TODO: validate
-			/*
-			try {
-				if (!cm.Login (wiki, user, pass)) {
-					return false;
-				}
-			} catch (Exception e) {
-				Console.WriteLine (e.ToString ());
-				return false;
-			}
-			*/
-
 			Console.WriteLine ("Requesting token");
 			string token = getEditToken ();
 			Console.WriteLine ("Token: " + token);
 			token = WebUtility.UrlEncode (token);
 			Console.WriteLine ("Encoded token " + token);
 
-
-			/*string page = cm.GetRequest ("http://" + wiki + ".wikia.com/wiki/User:" + user + "/chatlog/list", new string[] {
-				"action=raw"
-			});*/
-
-			//update log list TODO: re-enable
-			/*
-			cm.PostRequest ("https://" + wiki + ".wikia.com/api.php", new string[] {
-				"action=edit",
-				"title=User:"+user+"/chatlog/list",
-				"prependtext=*[[User:KINMUNE/chatlog/" + date + "|" + date + "]]\n",
-				"summary=Adding log",
-				"bot=1",
-				"token=" + token
-			}, "Hi");
-			*/
+			buffer = WebUtility.UrlEncode (buffer);
 
 			//string page = "{{../}}\n" + File.ReadAllText(@""+date+".log");
 

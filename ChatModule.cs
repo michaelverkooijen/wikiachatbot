@@ -171,7 +171,10 @@ namespace WikiaBot {
 				failCount = 0; //cycle is success, reset fail counter
 				Thread.Sleep (1000);
 				Console.WriteLine (nopCount.ToString ());
-				if (nopCount > 300) { //circa 10 minutes of no activity
+				if (nopCount > 300) {
+					idleTalk ();
+				}
+				/*if (nopCount > 300) { //circa 10 minutes of no activity
 					Console.WriteLine ("Getting user list");
 					var userList = getUserList ();
 					foreach (var obj in userList["users"]) {
@@ -185,7 +188,7 @@ namespace WikiaBot {
 						failCount = 100;
 						nopCount = 0;
 					}
-				}
+				}*/
 			}
 			return false;
 		}
@@ -400,6 +403,27 @@ namespace WikiaBot {
 				}
 			}
 			return true;
+		}
+
+		private void idleTalk () {
+			Random r = new Random ();
+			switch (r.Next (5)) {
+			case 0:
+				speak ("Chat seems dead, we need a necromancer!");
+				break;
+			case 1:
+				speak ("Slen Tiid Vo!");
+				break;
+			case 2:
+				speak ("Diil Qoth Zaam!");
+				break;
+			case 3:
+				speak ("I'm bored.");
+				break;
+			case 4:
+				speak ("/me fell asleep");
+				break;
+			}
 		}
 
 		private void speak (string s) {
