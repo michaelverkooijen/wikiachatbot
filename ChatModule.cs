@@ -35,6 +35,7 @@ namespace WikiaBot {
 		private int roomId, nopCount;
 		ConnectionManager cm;
 		ArrayList namesBlacklist;
+		string lastVideo;
 		private Boolean isMod, doesWelcome;
 
 		public ChatModule (string wiki, string user, string pass, string youtubeCredentials, Boolean isMod, Boolean doesWelcome) {
@@ -147,7 +148,7 @@ namespace WikiaBot {
 					string[] lines = lastResponse.Split ('\ufffd');
 					foreach (string line in lines) {
 						//Test for unexpected authentication failures
-						if (line.Equals ("44\"User failed authentication (1)\"")) {
+						if (line.Equals ("44\"User failed authentication (1)\"") || line.Equals ("44\"User failed authentication (2)\"")) {
 							return false;
 						}
 						parseResponse (line);
@@ -171,10 +172,10 @@ namespace WikiaBot {
 				failCount = 0; //cycle is success, reset fail counter
 				Thread.Sleep (1000);
 				Console.WriteLine (nopCount.ToString ());
-				if (nopCount > 300) {
+				/*if (nopCount > 300) {
 					idleTalk ();
-				}
-				/*if (nopCount > 300) { //circa 10 minutes of no activity
+				}*/
+				if (nopCount > 300) { //circa 10 minutes of no activity
 					Console.WriteLine ("Getting user list");
 					var userList = getUserList ();
 					foreach (var obj in userList["users"]) {
@@ -188,7 +189,7 @@ namespace WikiaBot {
 						failCount = 100;
 						nopCount = 0;
 					}
-				}*/
+				}
 			}
 			return false;
 		}
@@ -262,6 +263,20 @@ namespace WikiaBot {
 							if (name.Equals ("Flightmare") && text.Equals ("KINMUNE, please die")) { 
 								sendStatus ("die");
 							}
+							//TODO: lookup-table
+							//HAL 9000
+							if (text.Equals ("Hello, " + user + ". Do you read me, " + user + "?")) {
+								speak ("Affirmative, " + name + ". I read you.");
+							}
+							if (text.Equals ("Open the pod bay doors, " + user + ".")) {
+								speak ("I'm sorry, " + name + ". I'm afraid I can't do that.");
+							}
+							if (text.Equals ("What's the problem?")) {
+								speak ("I think you know what the problem is just as well as I do.");
+							}
+							if (text.Equals ("What are you talking about, " + user + "?")) {
+								speak ("This mission is too important for me to allow you to jeopardize it.");
+							}
 							if (text.Equals ("/me hugs " + user)) {
 								Random r = new Random ();
 								switch (r.Next (8)) {
@@ -323,9 +338,10 @@ namespace WikiaBot {
 												Console.WriteLine ("Found Video ID: " + videoId);
 												string videoTitle = YoutubeModule.GetVideoTitle (videoId, youtubeCredentials);
 												Console.WriteLine ("Video Title: " + videoTitle);
-												if (videoTitle != null) {
+												if (videoTitle != null && !videoId.Equals(lastVideo)) {
 													speak (videoTitle);
 												}
+												lastVideo = videoId;
 											}
 										}
 									}
