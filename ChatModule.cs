@@ -335,7 +335,7 @@ namespace WikiaBot {
 												string videoTitle = YoutubeModule.GetVideoTitle (videoId, youtubeCredentials);
 												Console.WriteLine ("Video Title: " + videoTitle);
 												//Prevent video loop exploit
-												if (videoTitle != null && !Regex.IsMatch (text, "https?://(www.)?(m.)?youtu.?be", RegexOptions.IgnoreCase)) {
+												if (videoTitle != null && !Regex.IsMatch (videoTitle, "https?://(www.)?(m.)?youtu.?be", RegexOptions.IgnoreCase)) {
 													speak (videoTitle);
 												}
 											}
