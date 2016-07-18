@@ -35,7 +35,6 @@ namespace WikiaBot {
 		private int roomId, nopCount;
 		ConnectionManager cm;
 		ArrayList namesBlacklist;
-		string lastVideo;
 		private Boolean isMod, doesWelcome;
 
 		public ChatModule (string wiki, string user, string pass, string youtubeCredentials, Boolean isMod, Boolean doesWelcome) {
@@ -231,9 +230,6 @@ namespace WikiaBot {
 							} catch (Exception e) {
 								Console.WriteLine (e.ToString ());
 							}
-							//Burst text after logging
-							string date = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
-							burstUpload (date, line);
 
 							if (isMod && containsBadLanguage (text)) {
 								Random r = new Random ();
@@ -338,15 +334,18 @@ namespace WikiaBot {
 												Console.WriteLine ("Found Video ID: " + videoId);
 												string videoTitle = YoutubeModule.GetVideoTitle (videoId, youtubeCredentials);
 												Console.WriteLine ("Video Title: " + videoTitle);
-												if (videoTitle != null && !videoId.Equals(lastVideo)) {
+												//Prevent video loop exploit
+												if (videoTitle != null && !Regex.IsMatch (text, "https?://(www.)?(m.)?youtu.?be", RegexOptions.IgnoreCase)) {
 													speak (videoTitle);
 												}
-												lastVideo = videoId;
 											}
 										}
 									}
 								}
 							}
+							//Burst text after logging
+							string date = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
+							burstUpload (date, line);
 						}
 						break;
 					case "join":
@@ -496,6 +495,7 @@ namespace WikiaBot {
 		private void burstUpload (string date, string s) {
 			s = "\n" + s;
 			if (s.Length + Global.burstBuffer.Length > 4000) {
+				sendStatusAway ();
 				try {
 					new UploadLog (wiki, user).upload (date, Global.burstBuffer);
 					Global.burstBuffer = s;//resets only after success
@@ -505,6 +505,7 @@ namespace WikiaBot {
 						Global.burstBuffer = s; //give up
 					}
 				}
+				sendStatusBack ();
 			} else {
 				Global.burstBuffer += s;
 				Console.WriteLine ("Burst buffer: " + Global.burstBuffer.Length.ToString ());
