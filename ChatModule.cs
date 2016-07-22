@@ -177,16 +177,18 @@ namespace WikiaBot {
 				if (nopCount > 300) { //circa 10 minutes of no activity
 					Console.WriteLine ("Getting user list");
 					var userList = getUserList ();
-					foreach (var obj in userList["users"]) {
-						if (((string)obj ["username"]).Equals (user)) {
-							Console.WriteLine ("I'm still in the chat.");
+					if (userList != null) {
+						foreach (var obj in userList["users"]) {
+							if (((string)obj ["username"]).Equals (user)) {
+								Console.WriteLine ("I'm still in the chat.");
+								nopCount = 0;
+							}
+						}
+						if (nopCount > 0) {
+							Console.WriteLine ("I'm no longer in the user list, reconnecting...");
+							failCount = 100;
 							nopCount = 0;
 						}
-					}
-					if (nopCount > 0) {
-						Console.WriteLine ("I'm no longer in the user list, reconnecting...");
-						failCount = 100;
-						nopCount = 0;
 					}
 				}
 			}
@@ -222,7 +224,7 @@ namespace WikiaBot {
 							string line = "*" + dt.Split (' ') [1] + ": [[User:" + name + "|]]: <nowiki>" + text + "</nowiki>";
 							Console.WriteLine (line);
 							string filename = dt.Split (' ') [0] + ".log";
-							Console.WriteLine (filename);
+							//Console.WriteLine (filename);
 							try {
 								using (StreamWriter file = File.AppendText (@filename)) {
 									file.WriteLine (line);
