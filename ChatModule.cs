@@ -143,11 +143,12 @@ namespace WikiaBot {
 					lastResponse = Regex.Replace (lastResponse, @"[\u0000-\u0007]", string.Empty); //removes ETX, EOT sent by server
 					//Console.WriteLine (lastResponse);
 					//�433�
+					lastResponse = lastResponse.Replace ('\u0009', ' '); //Replace tabs with spaces
 					lastResponse = lastResponse.Replace ('\u00ff', '\ufffd'); //Windows workaround
 					string[] lines = lastResponse.Split ('\ufffd');
 					foreach (string line in lines) {
-						//Test for unexpected authentication failures
-						if (line.Equals ("44\"User failed authentication (1)\"") || line.Equals ("44\"User failed authentication (2)\"")) {
+						//Test for unexpected authentication failures: Stripped string: 4"Authentication failed (1)"
+						if (line.Equals ("4\"Authentication failed (1)\"") || line.Equals ("4\"Authentication failed (2)\"")) {
 							return false;
 						}
 						parseResponse (line);
@@ -346,8 +347,8 @@ namespace WikiaBot {
 								}
 							}
 							//Burst text after logging
-							string date = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
-							burstUpload (date, line);
+							//string date = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
+							//burstUpload (date, line);
 						}
 						break;
 					case "join":
@@ -381,9 +382,9 @@ namespace WikiaBot {
 								Console.WriteLine (e.ToString ());
 							}
 							//Burst text after logging
-							string timestamp = (string)data ["attrs"] ["timeStamp"];
-							string dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
-							burstUpload (dt, line);
+							//string timestamp = (string)data ["attrs"] ["timeStamp"];
+							//string dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
+							//burstUpload (dt, line);
 						}
 						break;
 					case "ban":
@@ -405,9 +406,9 @@ namespace WikiaBot {
 								Console.WriteLine (e.ToString ());
 							}
 							//Burst text after logging
-							string timestamp = (string)data ["attrs"] ["timeStamp"];
-							string dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
-							burstUpload (dt, line);
+							//string timestamp = (string)data ["attrs"] ["timeStamp"];
+							//string dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
+							//burstUpload (dt, line);
 						}
 						break;
 					}
