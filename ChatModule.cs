@@ -42,7 +42,6 @@ namespace WikiaBot {
 			this.user = user;
 			this.pass = pass;
 			this.youtubeCredentials = youtubeCredentials;
-			//cm = new ConnectionManager ("https://" + wiki + ".wikia.com", "wikicities");
 			cm = ConnectionManager.getConnection ("https://" + wiki + ".wikia.com", "wikicities");
 			namesBlacklist = new ArrayList ();
 			namesBlacklist.Add (user); //prevent bot from talking to itself
@@ -155,6 +154,7 @@ namespace WikiaBot {
 					}
 					Thread.Sleep (1000);
 					sendHeartbeat ();
+					failCount = 0; //cycle is success, reset fail counter
 				} catch (Exception e) {
 					lastResponse = "";
 					failCount++;
@@ -169,7 +169,6 @@ namespace WikiaBot {
 						Console.WriteLine (ex.ToString ());
 					}
 				}
-				failCount = 0; //cycle is success, reset fail counter
 				Thread.Sleep (1000);
 				Console.WriteLine (nopCount.ToString ());
 				/*if (nopCount > 300) {
@@ -222,7 +221,7 @@ namespace WikiaBot {
 							string text = (string)data ["attrs"] ["text"];
 							string timestamp = (string)data ["attrs"] ["timeStamp"];
 							var dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd HH:mm:ss");
-							string line = "*" + dt.Split (' ') [1] + ": [[User:" + name + "|]]: <nowiki>" + text + "</nowiki>";
+							string line = "*" + dt.Split (' ') [1] + ": [[User:" + name + "|]]: <nowiki>" + text + "</nowiki>"; //clear </nowiki> from text body to prevent code injections.
 							Console.WriteLine (line);
 							string filename = dt.Split (' ') [0] + ".log";
 							//Console.WriteLine (filename);
@@ -346,9 +345,6 @@ namespace WikiaBot {
 									}
 								}
 							}
-							//Burst text after logging
-							//string date = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
-							//burstUpload (date, line);
 						}
 						break;
 					case "join":
@@ -381,10 +377,6 @@ namespace WikiaBot {
 							} catch (Exception e) {
 								Console.WriteLine (e.ToString ());
 							}
-							//Burst text after logging
-							//string timestamp = (string)data ["attrs"] ["timeStamp"];
-							//string dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
-							//burstUpload (dt, line);
 						}
 						break;
 					case "ban":
@@ -405,10 +397,6 @@ namespace WikiaBot {
 							} catch (Exception e) {
 								Console.WriteLine (e.ToString ());
 							}
-							//Burst text after logging
-							//string timestamp = (string)data ["attrs"] ["timeStamp"];
-							//string dt = new DateTime (1970, 1, 1, 0, 0, 0, 0).AddSeconds (Math.Round (Convert.ToInt64 (timestamp) / 1000d)).ToString ("yyyyMMdd");
-							//burstUpload (dt, line);
 						}
 						break;
 					}
@@ -492,27 +480,6 @@ namespace WikiaBot {
 				}
 			}
 			return false;
-		}
-
-		//TODO: implement 8k characters protection for s
-		private void burstUpload (string date, string s) {
-			s = "\n" + s;
-			if (s.Length + Global.burstBuffer.Length > 4000) {
-				sendStatusAway ();
-				try {
-					new UploadLog (wiki, user).upload (date, Global.burstBuffer);
-					Global.burstBuffer = s;//resets only after success
-				} catch (Exception e) {
-					Console.WriteLine (e.ToString ());
-					if (s.Length + Global.burstBuffer.Length > 7000) {
-						Global.burstBuffer = s; //give up
-					}
-				}
-				sendStatusBack ();
-			} else {
-				Global.burstBuffer += s;
-				Console.WriteLine ("Burst buffer: " + Global.burstBuffer.Length.ToString ());
-			}
 		}
 	}
 }
