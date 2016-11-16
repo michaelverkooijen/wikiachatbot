@@ -36,6 +36,7 @@ namespace WikiaBot {
 		ConnectionManager cm;
 		ArrayList namesBlacklist;
 		private Boolean isMod, doesWelcome;
+		Regex r = new Regex ("https?://(www.)?(m.)?youtu.be/");
 
 		public ChatModule (string wiki, string user, string pass, string youtubeCredentials, Boolean isMod, Boolean doesWelcome) {
 			this.wiki = wiki;
@@ -146,15 +147,18 @@ namespace WikiaBot {
 					lastResponse = lastResponse.Replace ('\u00ff', '\ufffd'); //Windows workaround
 					string[] lines = lastResponse.Split ('\ufffd');
 					foreach (string line in lines) {
-						//Test for unexpected authentication failures: Stripped string: 4"Authentication failed (1)"
-						if (line.Equals ("4\"Authentication failed (1)\"") || line.Equals ("4\"Authentication failed (2)\"")) {
-							return false;
+						try {
+							parseResponse (line);
+						} catch {
+							if (line.Contains("4\"Authentication failed")) {
+								Environment.Exit(1);//FIXME
+							}
 						}
-						parseResponse (line);
+
 					}
 					Thread.Sleep (1000);
 					sendHeartbeat ();
-					failCount = 0; //cycle is success, reset fail counter
+					failCount = 0; //cycle is success, reset fail counter FIXME
 				} catch (Exception e) {
 					lastResponse = "";
 					failCount++;
@@ -262,6 +266,29 @@ namespace WikiaBot {
 								sendStatus ("die");
 							}
 							//TODO: lookup-table
+							if (text.StartsWith(user + ",") && text.EndsWith("?")) {
+								Random r = new Random ();
+								switch (r.Next(6)) {
+								case 0:
+									speak ("Yes.");
+									break;
+								case 1:
+									speak ("No.");
+									break;
+								case 2:
+									speak ("Most certainly.");
+									break;
+								case 3:
+									speak ("I'll get back to you on that one.");
+									break;
+								case 4:
+									speak ("Ask SuperSajuuk, he probably knows.");
+									break;
+								case 5:
+									speak ("Not even remotely.");
+									break;
+								}
+							}
 							//HAL 9000
 							if (text.Equals ("Hello, " + user + ". Do you read me, " + user + "?")) {
 								speak ("Affirmative, " + name + ". I read you.");
@@ -274,6 +301,9 @@ namespace WikiaBot {
 							}
 							if (text.Equals ("What are you talking about, " + user + "?")) {
 								speak ("This mission is too important for me to allow you to jeopardize it.");
+							}
+							if (text.Equals ("/me tackles " + user)) {
+								speak ("http://www.youtube.com/watch?v=WWaLxFIVX1s");
 							}
 							if (text.Equals ("/me hugs " + user)) {
 								Random r = new Random ();
@@ -329,6 +359,16 @@ namespace WikiaBot {
 								foreach (string word in words) {
 									string[] args = word.Split ('?');
 									foreach (string argument in args) {
+										string[] shortUrl = r.Split (argument);
+										if (shortUrl.Length == 2) {
+											Console.WriteLine ("Found Video ID: " + shortUrl[1]);
+											string videoTitle = YoutubeModule.GetVideoTitle (shortUrl[1], youtubeCredentials);
+											Console.WriteLine ("Video Title: " + videoTitle);
+											//Prevent video loop exploit
+											if (videoTitle != null && !Regex.IsMatch (videoTitle, "https?://(www.)?(m.)?youtu.?be", RegexOptions.IgnoreCase)) {
+												speak (videoTitle);
+											}
+										}
 										string[] subargs = argument.Split ('&');
 										foreach (string subarg in subargs) {
 											if (subarg.Contains ("v=")) {
